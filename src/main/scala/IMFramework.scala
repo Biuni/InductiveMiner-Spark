@@ -11,9 +11,9 @@ import FallThrough._
 
 object IMFramework {
 
-  def IMFramework(log: List[List[String]], sc: SparkContext) : List[String] = { 
+  def IMFramework(log: List[List[String]], sc: SparkContext) : Unit = { 
     // Viene creato il Directly Follows Graph del log
-    createDFG(log)
+    createDFG(log, sc)
 
     // Controlla se il log è un BaseCase
     var bc = BaseCase(log)
@@ -40,6 +40,7 @@ object IMFramework {
         FallThrough(log)
       }
     }
+
   }
 
 }

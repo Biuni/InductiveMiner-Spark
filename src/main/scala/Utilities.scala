@@ -5,7 +5,7 @@ import scala.collection.mutable.ListBuffer
 
 object Utilities {
 
-  def createDFG : Array[Array[Int]] = {
+  def createDFG(log: List[List[String]], sc: SparkContext) : Array[Array[Int]] = {
     val rddLog = sc.parallelize(log)
     val activities = rddLog.distinct().collect().toList.flatten.distinct.sorted
 
