@@ -16,6 +16,7 @@ object Main extends App {
   println("\n")
   println("*** Inductive Miner on Apache Spark ***")
   println("** Gianluca Bonifazi - Gianpio Sozzo **")
+  println("** TEST **)
   println("\n")
 
   // Example: Read log from Hadoop hosted file
