@@ -16,17 +16,16 @@ object Main extends App {
   println("\n")
   println("*** Inductive Miner on Apache Spark ***")
   println("** Gianluca Bonifazi - Gianpio Sozzo **")
-  println("** TEST **)
   println("\n")
 
   // Example: Read log from Hadoop hosted file
   // val log = sc.textFile("hdfs://....")
 
   val log = List(
-    List("a","b","d","f"),
-    List("a","c","e","f"),
-    List("a","c","d","f"),
-    List("a","c","d","f")
+    List("a","b","c"),
+    List("a","c","b","h","c"),
+    List("a","d","e"),
+    List("a","d","e","f","d","e")
   )
 
   IMFramework(log, sc)
