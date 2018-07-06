@@ -16,10 +16,10 @@ object IMFramework {
     createDFG(log, sc)
 
     // Controlla se il log è un BaseCase
-    var bc = BaseCase(log)
+    var bc = checkBaseCase(log, sc)
     // Se esiste un basecase (e quindi la lista non è vuota)
     if(!bc.isEmpty) {
-      // Ritorno il basecase
+      // Inserisco il BaseCase nella lista dell'albero
       bc
     } else {
       // Se non è un BaseCase si controlla l'esistenza di un cut
