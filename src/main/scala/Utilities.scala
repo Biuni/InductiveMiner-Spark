@@ -5,7 +5,7 @@ import scala.collection.mutable.ListBuffer
 
 object Utilities {
 
-  def createDFG(log: List[List[String]], sc: SparkContext) : Array[Array[Int]] = {
+  def createDFG(log: List[List[String]], sc: SparkContext) : (Array[Array[Int]], List[String]) = {
     val rddLog = sc.parallelize(log)
     val activities = rddLog.distinct().collect().toList.flatten.distinct.sorted
 
@@ -39,7 +39,7 @@ object Utilities {
     // Debug Only
     stampaMatrice(matrix, activities)
 
-    matrix
+    (matrix, activities)
   }
 
   def stampaMatrice(mAtr: Array[Array[Int]], sigma: List[String]) = {

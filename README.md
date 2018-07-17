@@ -4,9 +4,9 @@ An Implementation of Inductive Miner plugin with Apache Spark.
 
 ### Information
 This's an initial release of IM. Will should be implemented:
-- Sequence Cut
+- Concurrent Cut
 - Loop Cut
-- Sequence Split
+- Concurrent Split
 - Loop Split
 - Falltrough
 
