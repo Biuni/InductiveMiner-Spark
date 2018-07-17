@@ -20,16 +20,16 @@ object IMFramework {
     // Se esiste un basecase (e quindi la lista non è vuota)
     if(!bc.isEmpty) {
       // Inserisco il BaseCase nella lista dell'albero
-      bc
+      println(bc)
     } else {
       // Se non è un BaseCase si controlla l'esistenza di un cut
       // Example : List(List(->), List(a), List(b, c, d, e, f, h))
       var cut = checkFindCut(log, sc, DFG)
       // Se esiste un cut (e quindi la lista non è vuota)
-      if(!cut.isEmpty) {
+      if(cut._1) {
         // Faccio lo split in base al cut
         // Example: List(List(List(a)), List(List(b,c),List(c,b,h,c),List(d,e),List(d,e,f,d,e))
-        // ##### var newLogs = SplitLog(log, cut)
+        var newLogs = checkSplitLog(log, cut._2, sc)
         // Avvia la ricorsione con i log splittati
         // (le due ricorsioni vanno eseguite in parallelo)
         // ##### IMFramework(newLogs(0))

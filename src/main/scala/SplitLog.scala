@@ -10,13 +10,16 @@ object SplitLog {
   * After finding a cut, the IM framework splits the log into several sub-logs,
   * on which recursion continues.
   */
-  def SplitLog(log: List[List[String]], cut: List[List[String]], sc: SparkContext) : Unit = {
-    // 1. xorSplit(log)
-    // 2. sequenceSplit(log)
-    // 3. concurrentSplit(log)
-    // 4. loopSplit(log)
+  def checkSplitLog(log: List[List[String]], cut: List[List[String]], sc: SparkContext) : Unit = {
 
     // CODE: https://s22.postimg.cc/c684p44g1/splitlof.jpg
+
+    val newLog = cut(0)(0) match {
+      case "X" => xorSplit(log, cut, sc)
+      case "->" => sequenceSplit(log, cut, sc)
+      case "||" => concurrentSplit(log, cut, sc)
+      case "*" => loopSplit(log, cut, sc)
+    }
   }
   
   ///////////////////////////////////////////////////////////////////////////
@@ -32,7 +35,7 @@ object SplitLog {
              List(List("b","d","f"), List("c","e","f"), List("c","d","f"))
   * @return List[List[List[String]]]
   */
-  def xorSplit(log: List[List[String]], sc: SparkContext) : Unit = {
+  def xorSplit(log: List[List[String]], cut: List[List[String]], sc: SparkContext) : Unit = {
 
   }
 
@@ -45,7 +48,7 @@ object SplitLog {
              List(List("b","d","f"), List("c","e","f"), List("c","d","f"))
   * @return List[List[List[String]]]
   */
-  def sequenceSplit(log: List[List[String]], sc: SparkContext) : Unit = {
+  def sequenceSplit(log: List[List[String]], cut: List[List[String]], sc: SparkContext) : Unit = {
 
   }
 
@@ -53,7 +56,7 @@ object SplitLog {
   * Concurrent Split
   * ToDo...
   */
-  def concurrentSplit(log: List[List[String]], sc: SparkContext) : Unit = {
+  def concurrentSplit(log: List[List[String]], cut: List[List[String]], sc: SparkContext) : Unit = {
 
   }
 
@@ -61,7 +64,7 @@ object SplitLog {
   * Loop Split
   * ToDo...
   */
-  def loopSplit(log: List[List[String]], sc: SparkContext) : Unit = {
+  def loopSplit(log: List[List[String]], cut: List[List[String]], sc: SparkContext) : Unit = {
 
   }
     

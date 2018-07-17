@@ -37,26 +37,27 @@ object Utilities {
     }
     
     // Debug Only
-    stampaMatrice(matrix, activities)
+    printDFG(matrix, activities)
 
     (matrix, activities)
   }
 
-  def stampaMatrice(mAtr: Array[Array[Int]], sigma: List[String]) = {
+  def printDFG(mAtr: Array[Array[Int]], sigma: List[String]) = {
 
     val arr = sigma.toArray.sorted
-    print("           ")
+    print("       ")
     for(a<-0 until sigma.length){
       print(arr(a)+" ")
     }
-    println()
+    println("\n")
     for(a<-0 until sigma.length){
-      print("Riga("+a+"): "+arr(a)+" ")
+      print("   "+arr(a)+"   ")
       for(b<-0 until sigma.length){
         print(mAtr(a)(b)+" ")
       }
       println()
     }
+    println("\n")
 
   }
 
