@@ -28,12 +28,6 @@ object Main extends App {
     List("a","d","e"),
     List("a","d","e","f","d","e")
   )
-  /*val log = List(
-    List("b","c"),
-    List("c","b","h","c"),
-    List("d","e"),
-    List("d","e","f","d","e")
-  )*/
 
   IMFramework(log, sc)
 

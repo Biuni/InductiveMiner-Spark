@@ -20,7 +20,7 @@ object IMFramework {
     // Se esiste un basecase (e quindi la lista non è vuota)
     if(!bc.isEmpty) {
       // Inserisco il BaseCase nella lista dell'albero
-      println("baseCase:"+ bc)
+      println("baseCase: "+ bc)
     } else {
       // Se non è un BaseCase si controlla l'esistenza di un cut
       // Example : List(List(->), List(a), List(b, c, d, e, f, h))
@@ -33,7 +33,7 @@ object IMFramework {
         // Avvia la ricorsione con i log splittati
         // (le due ricorsioni vanno eseguite in parallelo)
         // ##### IMFramework(newLogs(0), sc)
-        // ##### IMFramework(newLogs(1), sc)
+        IMFramework(newLogs(1), sc)
       } else {
         // Se non esiste nessun cut si esegue il FallThrough
         // Next...

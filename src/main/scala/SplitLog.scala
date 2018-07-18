@@ -38,7 +38,15 @@ object SplitLog {
   */
   def xorSplit(log: List[List[String]], cut: List[List[String]], sc: SparkContext) : List[List[List[String]]] = {
 
-    List(List(List()))
+    val rddSplit = sc.parallelize(log)
+    var newLog = rddSplit.map(list => {
+      list.filter(p => cut(1).exists(e => p.contains(e)))
+    }).collect().toList
+
+    val leftLog = newLog.filter(_ != List())
+    val rightLog = log.filterNot(newLog.contains(_))
+
+    List(leftLog, rightLog)
   }
 
   /**
@@ -51,12 +59,17 @@ object SplitLog {
   */
   def sequenceSplit(log: List[List[String]], cut: List[List[String]], sc: SparkContext) : List[List[List[String]]] = {
 
+    var singleActivity = cut(1)(0)
+    if(cut(1)(0).length > 1) {
+      singleActivity = cut(2)(0)
+    }
+
     val rddSplit = sc.parallelize(log)
     var newLog = rddSplit.map(list => {
-      list.filter(_ != cut(1)(0))
+      list.filter(_ != singleActivity)
     }).collect().toList
 
-    List(List(List(cut(1)(0))), newLog)
+    List(List(List(singleActivity)), newLog)
   }
 
   /**
