@@ -20,14 +20,12 @@ object FindCut {
     val xor = xorCut(log, sc, DFG)
     if(xor._1) {
       // xorCut found
-      println("xorCut: " + xor._2)
       result = xor._2
     } else {
 
       val seq = sequenceCut(log, sc, DFG)
       if(seq._1) {
         // sequenceCut found
-        println("seqCut: " + seq._2)
         result = seq._2
       } else {
 
@@ -119,7 +117,16 @@ object FindCut {
     // La lista dei risultati ha di nuovo in distinct perchè
     // così facendo elimino le liste uguali, cioè quelle che
     // formano lo XOR lasciando solo le attività separate
-    (isXor, result.distinct.toList)
+    val res = result.distinct.toList
+
+    // Il cut va fatto tra due liste di attività quindi
+    // se ne ho meno di 3 (perchè comprende anche
+    // il segno "X") allora non si tratta di uno xorCut.
+    if(res.length < 3) {
+      isXor = false
+    }
+
+    (isXor, res)
   }
 
   /**
@@ -160,7 +167,16 @@ object FindCut {
       result += DFG._2.tail
     }
 
-    (allZero, result.toList)
+    val res = result.toList
+
+    // Il cut va fatto tra due liste di attività quindi
+    // se ne ho meno di 3 (perchè comprende anche il 
+    // segno "->") allora non si tratta di uno sequenceCut.
+    if (res.length < 3) {
+      allZero = false
+    }
+
+    (allZero, res)
   }
 
   /**

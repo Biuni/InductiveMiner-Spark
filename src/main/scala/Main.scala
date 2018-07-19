@@ -2,6 +2,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.log4j.{Level, Logger}
 
 import IM.IMFramework._
+import IM.Utilities._
 
 object Main extends App {
 
@@ -14,9 +15,9 @@ object Main extends App {
     .setLevel(Level.ERROR)
 
   println("\n")
-  println("*** Inductive Miner on Apache Spark ***")
-  println("** Gianluca Bonifazi - Gianpio Sozzo **")
-  println("* Università Politecnica delle Marche *")
+  printColor("yellow", "*** Inductive Miner on Apache Spark ***")
+  printColor("yellow", "** Gianluca Bonifazi - Gianpio Sozzo **")
+  printColor("yellow", "* Università Politecnica delle Marche *")
   println("\n")
 
   // Example: Read log from Hadoop hosted file
