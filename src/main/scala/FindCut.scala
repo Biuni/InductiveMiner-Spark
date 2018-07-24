@@ -11,7 +11,7 @@ object FindCut {
   * The IM searches for several cuts using the cut footprints.
   * It attempts to find cuts in the order: XOR, SEQUENCE, CONCURRENT, LOOP.
   */
-  def checkFindCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String])) : (Boolean, List[List[String]]) = {
+  def checkFindCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String], Array[Array[Int]])) : (Boolean, List[List[String]]) = {
 
     // CODE: https://s22.postimg.cc/esj1sl17l/Find_Cut.jpg
     var cutFound : Boolean = true
@@ -60,7 +60,7 @@ object FindCut {
   * Example : List(List("X"), List("b","c","h"), List("d","e","f"))
   * @return (Boolean, List[List[String]])
   */
-  def xorCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String])) : (Boolean, List[List[String]]) = {
+  def xorCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String], Array[Array[Int]])) : (Boolean, List[List[String]]) = {
 
     // Controllo se esiste una riga o una colonna del DFG 
     // dove sono tutti 0 perchè se così fosse allora
@@ -86,7 +86,7 @@ object FindCut {
           }
         }
 
-        if(checkXorRow == 0 || checkXorCol == 0){
+        if((checkXorRow == 0 || checkXorCol == 0) && (i<1)){
           isXor = false
         }
       }
@@ -175,7 +175,7 @@ object FindCut {
   * Example : List(List(->), List(a), List(b, c, d, e, f, h))
   * @return (Boolean, List[List[String]])
   */
-  def sequenceCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String])) : (Boolean, List[List[String]]) = {
+  def sequenceCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String], Array[Array[Int]])) : (Boolean, List[List[String]]) = {
 
     // Controllo se riga o colonna delle
     // attività del DFG sono tutti 0
@@ -234,7 +234,7 @@ object FindCut {
   * Concurrent Cut
   * ToDo...
   */
-  def concurrentCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String])) : (Boolean, List[List[String]]) = {
+  def concurrentCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String], Array[Array[Int]])) : (Boolean, List[List[String]]) = {
 
     (false, List(List()))
   }
@@ -243,7 +243,7 @@ object FindCut {
   * Loop Cut
   * ToDo...
   */
-  def loopCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String])) : (Boolean, List[List[String]]) = {
+  def loopCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String], Array[Array[Int]])) : (Boolean, List[List[String]]) = {
 
     (false, List(List()))
   }

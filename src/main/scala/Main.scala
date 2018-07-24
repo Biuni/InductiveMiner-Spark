@@ -31,14 +31,14 @@ object Main extends App {
     List("a","d","e","f","d","e")
   )*/
 
-  val log = List(
+  /*val log = List(
     List("a","z","b","c"),
     List("a","z","c","b","h","c"),
     List("a","z","d","e"),
     List("a","z","d","e","f","d","e"),
     List("a","z","r","t"),
     List("a","z","t","t","r","g","r")
-  )
+  )*/
 
   /*val log = List(
     List("b","c"),
@@ -68,7 +68,80 @@ object Main extends App {
     List("d","e","f","d","e","z")
   )*/
 
-  IMFramework(log, sc)
+  val log = List(
+    List("a","b","c","d","e"),
+    List("a","b","c","d","e"), 
+    List("a","b","c","d","e"), 
+    List("a","b","c","d","e"), 
+    List("a","b","c","d","e"), 
+    List("a","b","c","d","e"), 
+    List("a","b","c","d","e"), 
+    List("a","b","c","d","e"), 
+    List("a","b","c","d","e"), 
+    List("a","b","c","d","e"),
+    List("a","d","b","e"),
+    List("a","d","b","e"), 
+    List("a","d","b","e"), 
+    List("a","d","b","e"), 
+    List("a","d","b","e"), 
+    List("a","d","b","e"), 
+    List("a","d","b","e"), 
+    List("a","d","b","e"), 
+    List("a","d","b","e"), 
+    List("a","d","b","e"), 
+    List("a","e","b"), 
+    List("a","e","b"), 
+    List("a","e","b"), 
+    List("a","e","b"), 
+    List("a","e","b"), 
+    List("a","e","b"), 
+    List("a","e","b"), 
+    List("a","e","b"), 
+    List("a","e","b"), 
+    List("a","e","b"), 
+    List("a","c","b"),  
+    List("a","c","b"),  
+    List("a","c","b"),  
+    List("a","c","b"),  
+    List("a","c","b"),  
+    List("a","c","b"),  
+    List("a","c","b"),  
+    List("a","c","b"),  
+    List("a","c","b"),  
+    List("a","c","b"), 
+    List("a","b","d","e","c"),
+    List("a","b","d","e","c"),
+    List("a","b","d","e","c"),
+    List("a","b","d","e","c"),
+    List("a","b","d","e","c"),
+    List("a","b","d","e","c"),
+    List("a","b","d","e","c"),
+    List("a","b","d","e","c"),
+    List("a","b","d","e","c"),
+    List("a","b","d","e","c"),  
+    List("c","a","b")
+  )
+
+  printColor("green", "Choose a variant of Inductive Miner:\n")
+  printColor("green", "1 - Inductive Miner (IM)\n")
+  printColor("green", "2 - Inductive Miner - infrequent (IMf)\n")
+
+  var imf: Boolean = false
+  var threshold: Float = -1
+  var c: Int = scala.io.StdIn.readInt()
+
+  if(c == 2) {
+    imf = true
+    printColor("green", "Set a Noise threshold (0 to 1): ")
+    threshold = scala.io.StdIn.readFloat()
+    while(threshold < 0 || threshold > 1) {
+      printColor("red", "Threshold not valid - Set a new threshold (0 to 1): ")
+      threshold = scala.io.StdIn.readFloat()
+    }
+    
+  }
+  
+  IMFramework(log, sc, imf, threshold)
 
   sc.stop
 

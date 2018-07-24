@@ -5,9 +5,17 @@ import scala.collection.mutable.ListBuffer
 
 object Utilities {
 
-  def createDFG(log: List[List[String]], sc: SparkContext) : (Array[Array[Int]], List[String]) = {
+  def checkActivities(log: List[List[String]], sc: SparkContext) : List[String] = {
     val rddLog = sc.parallelize(log)
     val activities = rddLog.distinct().collect().toList.flatten.distinct.sorted
+    activities
+  }
+
+  def createDFG(log: List[List[String]], sc: SparkContext, imf: Boolean) : (Array[Array[Int]], List[String], Array[Array[Int]]) = {
+    //val rddLog = sc.parallelize(log)
+    //val activities = rddLog.distinct().collect().toList.flatten.distinct.sorted
+
+    val activities = checkActivities(log,sc)
 
     val rddEdges = sc.parallelize(log)
     var edges = rddEdges.map(list =>{
@@ -19,6 +27,7 @@ object Utilities {
     }).collect().toList.flatten
 
     var matrix = new Array[Array[Int]](activities.length)
+    var matrixFreq = new Array[Array[Int]](activities.length)
     var rddActivities = sc.parallelize(activities)
 
     var arrT = rddActivities.map(list => {
@@ -32,14 +41,37 @@ object Utilities {
       (riga,arr)
     }).sortByKey(true).collect()
 
+    if(imf) {
+      var arrFreq = rddActivities.map(list => {
+        var riga = activities.indexOf(list)
+        var arrFreq =  new Array[Int](activities.length)
+        for(a<-0 until activities.length) {
+	    if(edges.contains((list,activities(a)))) {
+     	      arrFreq.update(a, edges.count(_ == (list,activities(a))))
+              }
+	  }
+        (riga,arrFreq)
+    }).sortByKey(true).collect()
+
+    for(a<-0 until arrFreq.length){
+      matrixFreq(a)=arrFreq(a)._2
+    }
+
+    }
+
     for(a<-0 until arrT.length){
       matrix(a)=arrT(a)._2
     }
     
     // Debug Only
+    println("Simple DFG\n")
     printDFG(matrix, activities)
+    if(imf) {
+      println("DFG with frequencies\n")
+      printDFG(matrixFreq, activities)
+    }
 
-    (matrix, activities)
+    (matrix, activities, matrixFreq)
   }
 
 
