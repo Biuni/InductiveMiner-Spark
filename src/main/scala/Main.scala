@@ -23,11 +23,39 @@ object Main extends App {
   // Example: Read log from Hadoop hosted file
   // val log = sc.textFile("hdfs://....")
 
-  val log = List(
+  /*val log = List(
     List("a","b","c"),
     List("a","c","b","h","c"),
     List("a","d","e"),
     List("a","d","e","f","d","e")
+  )*/
+
+  /*val log = List(
+    List("b","c"),
+    List("c","b","h","c"),
+    List("d","e"),
+    List("d","e","f","d","e")
+  )*/
+
+  /*val log = List(
+    List("z","b","c"),
+    List("z","c","b","h","c"),
+    List("z","d","e"),
+    List("z","d","e","f","d","e")
+  )*/
+
+  /*val log = List(
+    List("b","c","a"),
+    List("c","b","h","c","a"),
+    List("d","e","a"),
+    List("d","e","f","d","e","a")
+  )*/
+
+  val log = List(
+    List("b","c","z"),
+    List("c","b","h","c","z"),
+    List("d","e","z"),
+    List("d","e","f","d","e","z")
   )
 
   IMFramework(log, sc)

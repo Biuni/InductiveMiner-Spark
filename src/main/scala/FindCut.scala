@@ -62,23 +62,35 @@ object FindCut {
   */
   def xorCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String])) : (Boolean, List[List[String]]) = {
 
-    // Controllo se riga o colonna del DFG sono tutti 0
-    // perchè se così fosse allora si può skippare al seqCut
-    var isXor : Boolean = false
-    // Scorro la RIGA della prima attività
-    for(elem <- DFG._1(0)) {
-      if(elem == 1) {
-	isXor = true
-      }
-    }
-    // Se la riga non ha tutti 0 provo con la COLONNA
-    if(isXor) {
-      isXor = false
-      for(elem <- DFG._1) {
-        if(elem(0) == 1) {
-	  isXor = true
+    // Controllo se esiste una riga o una colonna del DFG 
+    // dove sono tutti 0 perchè se così fosse allora
+    // si può skippare al seqCut
+    var isXor : Boolean = true
+    for(i <- 0 to DFG._2.length - 1) {
+
+      var checkXorRow : Int = 0
+      var checkXorCol : Int = 0
+      if(isXor == true) {
+        // RIGA
+        for(elem <- DFG._1(i)) {
+          if(elem == 1) {
+	    // NON E' UN SEQ
+            checkXorRow += 1
+          }
+        }
+        // COLONNA
+        for(elem <- DFG._1) {
+          if(elem(i) == 1) {
+	    // NON E' UN SEQ
+            checkXorCol += 1
+          }
+        }
+
+        if(checkXorRow == 0 || checkXorCol == 0){
+          isXor = false
         }
       }
+
     }
 
     var result = ListBuffer[List[String]]()
@@ -139,23 +151,36 @@ object FindCut {
   */
   def sequenceCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String])) : (Boolean, List[List[String]]) = {
 
-    // Controllo se riga o colonna della
-    // prima attività del DFG sono tutti 0
-    var allZero : Boolean = true
-    // Scorro la RIGA della prima attività
-    for(elem <- DFG._1(0)) {
-      if(elem == 1) {
-	allZero = false
-      }
-    }
-    // Se la riga non ha tutti 0 provo con la COLONNA
-    if(!allZero) {
-      allZero = true
-      for(elem <- DFG._1) {
-        if(elem(0) == 1) {
-	  allZero = false
+    // Controllo se riga o colonna delle
+    // attività del DFG sono tutti 0
+    var allZero : Boolean = false
+    var seqActivity : Int = 0
+    for(i <- 0 to DFG._2.length - 1) {
+
+      var checkSeqRow : Int = 0
+      var checkSeqCol : Int = 0
+      if(allZero == false) {
+        // RIGA
+        for(elem <- DFG._1(i)) {
+          if(elem == 1) {
+	    // NON E' UN SEQ
+            checkSeqRow += 1
+          }
+        }
+        // COLONNA
+        for(elem <- DFG._1) {
+          if(elem(i) == 1) {
+	    // NON E' UN SEQ
+            checkSeqCol += 1
+          }
+        }
+
+        if(checkSeqRow == 0 || checkSeqCol == 0){
+          allZero = true
+          seqActivity = i
         }
       }
+
     }
 
     var result = ListBuffer[List[String]]()
@@ -163,8 +188,8 @@ object FindCut {
     // è un sequenceCut.
     if(allZero) {
       result += List("->")
-      result += List(DFG._2.head)
-      result += DFG._2.tail
+      result += List(DFG._2(seqActivity))
+      result += DFG._2.filter(_ != DFG._2(seqActivity))
     }
 
     val res = result.toList
