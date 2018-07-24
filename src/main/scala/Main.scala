@@ -30,6 +30,15 @@ object Main extends App {
     List("a","d","e","f","d","e")
   )*/
 
+  val log = List(
+    List("a","z","b","c"),
+    List("a","z","c","b","h","c"),
+    List("a","z","d","e"),
+    List("a","z","d","e","f","d","e"),
+    List("a","z","r","t"),
+    List("a","z","t","t","r","g","r")
+  )
+
   /*val log = List(
     List("b","c"),
     List("c","b","h","c"),
@@ -51,12 +60,12 @@ object Main extends App {
     List("d","e","f","d","e","a")
   )*/
 
-  val log = List(
+  /*val log = List(
     List("b","c","z"),
     List("c","b","h","c","z"),
     List("d","e","z"),
     List("d","e","f","d","e","z")
-  )
+  )*/
 
   IMFramework(log, sc)
 

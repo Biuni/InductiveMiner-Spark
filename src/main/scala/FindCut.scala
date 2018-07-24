@@ -126,6 +126,29 @@ object FindCut {
       }
     }
 
+    // Trovo la lista con lunghezza maggiore
+    var maxLength : Int = 0
+    for(elem <- result) {
+      if(maxLength < elem.length) {
+        maxLength = elem.length
+      }
+    }
+
+    // Controllo tutte le liste con lunghezza
+    // minore di quella massima per vedere
+    // se è contenuta in una delle altre liste
+    for((elem, index) <- result.zipWithIndex) {
+      println("elem: "+elem)
+      if(elem.length < maxLength) {
+        for(singleList <- result) {
+          // Se è una sotto lista, va rimossa
+          if(elem.forall(singleList.contains)) {
+            println("single: "+singleList)
+          }
+        }
+      }
+    }
+
     // La lista dei risultati ha di nuovo in distinct perchè
     // così facendo elimino le liste uguali, cioè quelle che
     // formano lo XOR lasciando solo le attività separate
