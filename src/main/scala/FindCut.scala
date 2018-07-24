@@ -134,25 +134,28 @@ object FindCut {
       }
     }
 
+    var result2 = new ListBuffer[List[String]]()
     // Controllo tutte le liste con lunghezza
     // minore di quella massima per vedere
     // se è contenuta in una delle altre liste
-    for((elem, index) <- result.zipWithIndex) {
-      println("elem: "+elem)
+    for(elem <- result) {
       if(elem.length < maxLength) {
-        for(singleList <- result) {
+        for(a <- 0 until result.length) {
           // Se è una sotto lista, va rimossa
-          if(elem.forall(singleList.contains)) {
-            println("single: "+singleList)
+          if(elem.forall(result(a).contains) && (elem != result(a))) {
+            result2.+=(elem)
           }
         }
       }
     }
 
+    result2.toList
+
+    var res3 = result.diff(result2)
     // La lista dei risultati ha di nuovo in distinct perchè
     // così facendo elimino le liste uguali, cioè quelle che
     // formano lo XOR lasciando solo le attività separate
-    val res = result.distinct.toList
+    val res = res3.toList.distinct.toList
 
     // Il cut va fatto tra due liste di attività quindi
     // se ne ho meno di 3 (perchè comprende anche

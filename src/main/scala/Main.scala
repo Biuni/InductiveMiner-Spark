@@ -1,5 +1,6 @@
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.log4j.{Level, Logger}
+import scala.collection.mutable.ListBuffer
 
 import IM.IMFramework._
 import IM.Utilities._
