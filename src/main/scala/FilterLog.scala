@@ -22,7 +22,7 @@ object FilterLog {
 	}
       }
     }
-    println("simple DFG after filtering\n")
+    printColor("purple","   Simple DFG after filtering\n")
     printDFG(DFG._1, checkActivities(log,sc))
   }
 }

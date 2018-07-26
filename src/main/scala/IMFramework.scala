@@ -28,7 +28,7 @@ object IMFramework {
       var cut = checkFindCut(log, sc, DFG)
 
       if(!cut._1 && imf) {
-	printColor("red", "CUT not detected --> Filter log\n")
+	printColor("red", "- Cut Not Detected: FilterLog\n")
 	filterLog(log,sc,DFG,threshold)
 	cut = checkFindCut(log,sc,DFG)
       }

@@ -1,6 +1,5 @@
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.log4j.{Level, Logger}
-import scala.collection.mutable.ListBuffer
 
 import IM.IMFramework._
 import IM.Utilities._
@@ -122,9 +121,11 @@ object Main extends App {
     List("c","a","b")
   )
 
-  printColor("green", "Choose a variant of Inductive Miner:\n")
-  printColor("green", "1 - Inductive Miner (IM)\n")
-  printColor("green", "2 - Inductive Miner - infrequent (IMf)\n")
+  printColor("cyan", "Choose a variant of Inductive Miner:\n")
+  printColor("cyan", "1 - Inductive Miner (IM)")
+  printColor("cyan", "2 - Inductive Miner - infrequent (IMf)\n")
+
+  print("~ Digit (1 or 2): ")
 
   var imf: Boolean = false
   var threshold: Float = -1
@@ -132,13 +133,14 @@ object Main extends App {
 
   if(c == 2) {
     imf = true
-    printColor("green", "Set a Noise threshold (0 to 1): ")
+    print("~ Set a noise threshold (0 to 1): ")
     threshold = scala.io.StdIn.readFloat()
     while(threshold < 0 || threshold > 1) {
-      printColor("red", "Threshold not valid - Set a new threshold (0 to 1): ")
+      printColor("red", "* Threshold not valid! *")
+      print("~ Set a noise threshold (0 to 1): ")
       threshold = scala.io.StdIn.readFloat()
     }
-    
+    println()
   }
   
   IMFramework(log, sc, imf, threshold)

@@ -64,10 +64,10 @@ object Utilities {
     }
     
     // Debug Only
-    println("Simple DFG\n")
+    printColor("purple","   Simple DFG\n")
     printDFG(matrix, activities)
     if(imf) {
-      println("DFG with frequencies\n")
+      printColor("purple","   DFG with frequencies\n")
       printDFG(matrixFreq, activities)
     }
 
