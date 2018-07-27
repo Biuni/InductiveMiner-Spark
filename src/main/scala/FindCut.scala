@@ -86,7 +86,7 @@ object FindCut {
           }
         }
 
-        if((checkXorRow == 0 || checkXorCol == 0) && (i<1)){
+        if(checkXorRow == 0 || checkXorCol == 0){
           isXor = false
         }
       }

@@ -23,12 +23,12 @@ object Main extends App {
   // Example: Read log from Hadoop hosted file
   // val log = sc.textFile("hdfs://....")
 
-  /*val log = List(
+  val log = List(
     List("a","b","c"),
     List("a","c","b","h","c"),
     List("a","d","e"),
     List("a","d","e","f","d","e")
-  )*/
+  )
 
   /*val log = List(
     List("a","z","b","c"),
@@ -67,7 +67,7 @@ object Main extends App {
     List("d","e","f","d","e","z")
   )*/
 
-  val log = List(
+  /*val log = List(
     List("a","b","c","d","e"),
     List("a","b","c","d","e"), 
     List("a","b","c","d","e"), 
@@ -119,7 +119,7 @@ object Main extends App {
     List("a","b","d","e","c"),
     List("a","b","d","e","c"),  
     List("c","a","b")
-  )
+  )*/
 
   printColor("cyan", "Choose a variant of Inductive Miner:\n")
   printColor("cyan", "1 - Inductive Miner (IM)")
@@ -129,9 +129,9 @@ object Main extends App {
 
   var imf: Boolean = false
   var threshold: Float = -1
-  var c: Int = scala.io.StdIn.readInt()
+  var choose: Int = scala.io.StdIn.readInt()
 
-  if(c == 2) {
+  if(choose == 2) {
     imf = true
     print("~ Set a noise threshold (0 to 1): ")
     threshold = scala.io.StdIn.readFloat()
@@ -140,8 +140,8 @@ object Main extends App {
       print("~ Set a noise threshold (0 to 1): ")
       threshold = scala.io.StdIn.readFloat()
     }
-    println()
   }
+  println()
   
   IMFramework(log, sc, imf, threshold)
 
