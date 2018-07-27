@@ -1,17 +1,72 @@
 package IM
 
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.graphx._
+import org.apache.spark.rdd._
+
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
+import scala.util.MurmurHash
 
 object Utilities {
 
+  /**
+  * chooseIM
+  * 
+  * Choose the type of Inductive Miner
+  */
+  def chooseIM() : (Boolean, Float) = {
+
+    printColor("cyan", "Choose a variant of Inductive Miner:\n")
+    printColor("cyan", "1 - Inductive Miner (IM)")
+    printColor("cyan", "2 - Inductive Miner - infrequent (IMf)\n")
+
+    print("~ Digit (1 or 2): ")
+
+    var IMf: Boolean = false
+    var threshold: Float = -1
+    var choose: Int = scala.io.StdIn.readInt()
+
+    if(choose == 2) {
+      IMf = true
+      print("~ Set a noise threshold (0 to 1): ")
+      threshold = scala.io.StdIn.readFloat()
+      while(threshold < 0 || threshold > 1) {
+        printColor("red", "* Threshold not valid! *")
+        print("~ Set a noise threshold (0 to 1): ")
+        threshold = scala.io.StdIn.readFloat()
+      }
+    }
+
+    (IMf, threshold)
+  }
+
+  // Get all activities in the log
   def checkActivities(log: List[List[String]], sc: SparkContext) : List[String] = {
     val rddLog = sc.parallelize(log)
     val activities = rddLog.distinct().collect().toList.flatten.distinct.sorted
     activities
   }
+  def printDFG(mAtr: Array[Array[Int]], sigma: List[String]) = {
 
-  def createDFG(log: List[List[String]], sc: SparkContext, imf: Boolean) : (Array[Array[Int]], List[String], Array[Array[Int]]) = {
+    val arr = sigma.toArray.sorted
+    print("       ")
+    for(a<-0 until sigma.length){
+      print(arr(a)+" ")
+    }
+    println("\n")
+    for(a<-0 until sigma.length){
+      print("   "+arr(a)+"   ")
+      for(b<-0 until sigma.length){
+        print(mAtr(a)(b)+" ")
+      }
+      println()
+    }
+    println("\n")
+
+  }
+
+  def OLDcreateDFG(log: List[List[String]], sc: SparkContext, imf: Boolean) : (Array[Array[Int]], List[String], Array[Array[Int]]) = {
     //val rddLog = sc.parallelize(log)
     //val activities = rddLog.distinct().collect().toList.flatten.distinct.sorted
 
@@ -76,28 +131,41 @@ object Utilities {
 
 
   /**
-  * printDFG
+  * createDFG
   * 
-  * Print the Direct Follow Graph into console
+  * Create the Direct Follow Graph
+  * using the graphx library.
   */
-  def printDFG(mAtr: Array[Array[Int]], sigma: List[String]) = {
+  def createDFG(log: List[List[String]], sc: SparkContext, imf: Boolean) : Graph[String, String] = {
 
-    val arr = sigma.toArray.sorted
-    print("       ")
-    for(a<-0 until sigma.length){
-      print(arr(a)+" ")
+    var vertex = new ArrayBuffer[(Long,String)]()
+    val rddVertex = sc.parallelize(log)
+    val activities = rddVertex.distinct.collect.toList.flatten.distinct.sorted.zipWithIndex.map{ case (el, index) => 
+      vertex += ((index.toLong, el))
     }
-    println("\n")
-    for(a<-0 until sigma.length){
-      print("   "+arr(a)+"   ")
-      for(b<-0 until sigma.length){
-        print(mAtr(a)(b)+" ")
+
+    val vertexList = vertex.toList
+    var edges = new ArrayBuffer[Edge[String]]()
+    val rddEdge = sc.parallelize(log)
+    val createEdges = rddEdge.map{list =>
+      for(el <- list) {
+      
       }
-      println()
-    }
-    println("\n")
+      edges += Edge(1L, 2L, "1")
+    }.collect
+
+    // Create an Array for edges
+    //var edgeArray = Array(Edge(1L, 2L, "1"), Edge(2L, 3L, "1"), Edge(1L, 3L, "1"), Edge(2L, 7L, "1"), Edge(3L, 2L, "1"), Edge(4L, 5L, "1"), Edge(5L, 6L, "1"), Edge(6L, 4L, "1"), Edge(7L, 3L, "1"))
+
+    // Create an RDD for vertex
+    val vertexName: RDD[(VertexId, (String))] = sc.parallelize(vertex)
+    // Create an RDD for edges
+    val edgeName: RDD[Edge[String]] = sc.parallelize(edges)
+
+    Graph(vertexName, edgeName)
 
   }
+
 
   /**
   * printColor

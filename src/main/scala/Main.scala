@@ -1,4 +1,5 @@
 import org.apache.spark.{SparkConf, SparkContext}
+
 import org.apache.log4j.{Level, Logger}
 
 import IM.IMFramework._
@@ -30,120 +31,9 @@ object Main extends App {
     List("a","d","e","f","d","e")
   )
 
-  /*val log = List(
-    List("a","z","b","c"),
-    List("a","z","c","b","h","c"),
-    List("a","z","d","e"),
-    List("a","z","d","e","f","d","e"),
-    List("a","z","r","t"),
-    List("a","z","t","t","r","g","r")
-  )*/
-
-  /*val log = List(
-    List("b","c"),
-    List("c","b","h","c"),
-    List("d","e"),
-    List("d","e","f","d","e")
-  )*/
-
-  /*val log = List(
-    List("z","b","c"),
-    List("z","c","b","h","c"),
-    List("z","d","e"),
-    List("z","d","e","f","d","e")
-  )*/
-
-  /*val log = List(
-    List("b","c","a"),
-    List("c","b","h","c","a"),
-    List("d","e","a"),
-    List("d","e","f","d","e","a")
-  )*/
-
-  /*val log = List(
-    List("b","c","z"),
-    List("c","b","h","c","z"),
-    List("d","e","z"),
-    List("d","e","f","d","e","z")
-  )*/
-
-  /*val log = List(
-    List("a","b","c","d","e"),
-    List("a","b","c","d","e"), 
-    List("a","b","c","d","e"), 
-    List("a","b","c","d","e"), 
-    List("a","b","c","d","e"), 
-    List("a","b","c","d","e"), 
-    List("a","b","c","d","e"), 
-    List("a","b","c","d","e"), 
-    List("a","b","c","d","e"), 
-    List("a","b","c","d","e"),
-    List("a","d","b","e"),
-    List("a","d","b","e"), 
-    List("a","d","b","e"), 
-    List("a","d","b","e"), 
-    List("a","d","b","e"), 
-    List("a","d","b","e"), 
-    List("a","d","b","e"), 
-    List("a","d","b","e"), 
-    List("a","d","b","e"), 
-    List("a","d","b","e"), 
-    List("a","e","b"), 
-    List("a","e","b"), 
-    List("a","e","b"), 
-    List("a","e","b"), 
-    List("a","e","b"), 
-    List("a","e","b"), 
-    List("a","e","b"), 
-    List("a","e","b"), 
-    List("a","e","b"), 
-    List("a","e","b"), 
-    List("a","c","b"),  
-    List("a","c","b"),  
-    List("a","c","b"),  
-    List("a","c","b"),  
-    List("a","c","b"),  
-    List("a","c","b"),  
-    List("a","c","b"),  
-    List("a","c","b"),  
-    List("a","c","b"),  
-    List("a","c","b"), 
-    List("a","b","d","e","c"),
-    List("a","b","d","e","c"),
-    List("a","b","d","e","c"),
-    List("a","b","d","e","c"),
-    List("a","b","d","e","c"),
-    List("a","b","d","e","c"),
-    List("a","b","d","e","c"),
-    List("a","b","d","e","c"),
-    List("a","b","d","e","c"),
-    List("a","b","d","e","c"),  
-    List("c","a","b")
-  )*/
-
-  printColor("cyan", "Choose a variant of Inductive Miner:\n")
-  printColor("cyan", "1 - Inductive Miner (IM)")
-  printColor("cyan", "2 - Inductive Miner - infrequent (IMf)\n")
-
-  print("~ Digit (1 or 2): ")
-
-  var imf: Boolean = false
-  var threshold: Float = -1
-  var choose: Int = scala.io.StdIn.readInt()
-
-  if(choose == 2) {
-    imf = true
-    print("~ Set a noise threshold (0 to 1): ")
-    threshold = scala.io.StdIn.readFloat()
-    while(threshold < 0 || threshold > 1) {
-      printColor("red", "* Threshold not valid! *")
-      print("~ Set a noise threshold (0 to 1): ")
-      threshold = scala.io.StdIn.readFloat()
-    }
-  }
-  println()
+  val IMtype = chooseIM()
   
-  IMFramework(log, sc, imf, threshold)
+  IMFramework(log, sc, IMtype._1, IMtype._2)
 
   sc.stop
 
