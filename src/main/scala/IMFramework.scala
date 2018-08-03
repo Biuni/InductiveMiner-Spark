@@ -13,24 +13,40 @@ import FilterLog._
 
 object IMFramework {
 
-  def IMFramework(log: List[List[String]], sc: SparkContext, imf: Boolean, threshold: Float) : Unit = { 
-    // Viene creato il Directly Follows Graph del log
-    val DFG = createDFG(log, sc, imf)
-	val components: VertexRDD[VertexId] = DFG.connectedComponents().vertices.cache()
+    def IMFramework(graph: Graph[String, String]) : Unit = { 
 
-	// Conta il numero di componenti connesse
-	val countCC = components.map{ case(_,cc) => cc }.distinct.count()
-	val getCC = components.map{ case(_,cc) => cc }.distinct.collect()
+    // Controlla se il log è un BaseCase
+    var bc = checkBaseCase(graph)
+    // Se esiste un basecase (e quindi la lista non è vuota)
+    if(!bc.isEmpty) {
+      // Inserisco il BaseCase nella lista dell'albero
+      printColor("green", "- baseCase: "+ bc +"\n")
+      //println("- baseCase: "+ bc +"\n")
+    } else {
+      // Se non è un BaseCase si controlla l'esistenza di un cut e si splitta il log in base al cut trovato
+      // Example : List(List(->), List(a), List(b, c, d, e, f, h))
+      var cut = checkFindCut(graph)
 
-	// Print the vertices in that component
-	for(vertex <- getCC) {
-		var test = components.filter {
-		  case (id, component) => component == vertex
-		}.map(_._1).collect
-		println(test.toList)
-	}
-
-	println(countCC)
+      // Se esiste un cut (e quindi la lista non è vuota)
+      if(cut._1) {
+        // Stampo il cut
+        //printCut(cut._2)
+	// Faccio lo split in base al cut
+        // Example: List(List(List(a)), List(List(b,c),List(c,b,h,c),List(d,e),List(d,e,f,d,e))
+        var newLogs = checkSplitLog(graph, cut._2, cut._3, cut._4)
+	// Stampa il cut
+	printCut(cut._2.toList)	
+	//println(cut._2)
+        // Avvia la ricorsione con i log splittati
+        // (le due ricorsioni vanno eseguite in parallelo)
+        IMFramework(newLogs._1(0))
+        IMFramework(newLogs._1(1))
+      } else {
+        // Se non esiste nessun cut si esegue il FallThrough
+        // Next...
+        // ##### FallThrough(log)
+      }
+    }
 
   }
 }

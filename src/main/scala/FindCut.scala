@@ -2,6 +2,10 @@ package IM
 
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.graphx._
+
+import SplitLog._
+import Utilities._
 
 object FindCut {
 
@@ -11,31 +15,43 @@ object FindCut {
   * The IM searches for several cuts using the cut footprints.
   * It attempts to find cuts in the order: XOR, SEQUENCE, CONCURRENT, LOOP.
   */
-  def checkFindCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String], Array[Array[Int]])) : (Boolean, List[List[String]]) = {
+
+  def checkFindCut(graph: Graph[String, String]) : (Boolean, ListBuffer[List[String]], Long, Array[Long]) = {
 
     // CODE: https://s22.postimg.cc/esj1sl17l/Find_Cut.jpg
-    var cutFound : Boolean = true
-    var result : List[List[String]] = null
+    var cutFound : Boolean = false
+    var result : ListBuffer[List[String]] = null
+    var newLogs: List[Graph[String,String]] = null
+    var countCC : Long = -1
+    var getCC : Array[Long] = null
 
-    val xor = xorCut(log, sc, DFG)
+    val xor = xorCut(graph)
     if(xor._1) {
       // xorCut found
+      cutFound = true
       result = xor._2
+      //newLogs = xor._3
+      countCC = xor._3
+      getCC = xor._4
     } else {
 
-      val seq = sequenceCut(log, sc, DFG)
+      val seq = seqCut(graph)
       if(seq._1) {
+	cutFound = true
         // sequenceCut found
         result = seq._2
+        //newLogs = seq._3
+        countCC = seq._3
+        getCC = seq._4
       } else {
 
-        val concurrent = concurrentCut(log, sc, DFG)
-        if(concurrent._1) {
+       val concurrent = concurrentCut(graph)
+        if(concurrent) {
           // concurrentCut found
         } else {
 
-          val loop = loopCut(log, sc, DFG)
-          if(loop._1) {
+          val loop = loopCut(graph)
+          if(loop) {
             // loopCut found
           } else {
 	    // NO Cut found
@@ -45,7 +61,8 @@ object FindCut {
       }
     }
 
-    (cutFound, result)
+    //(cutFound, result, newLogs)
+    (cutFound, result, countCC, getCC)
   }
   
   ///////////////////////////////////////////////////////////////////////////
@@ -60,192 +77,77 @@ object FindCut {
   * Example : List(List("X"), List("b","c","h"), List("d","e","f"))
   * @return (Boolean, List[List[String]])
   */
-  def xorCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String], Array[Array[Int]])) : (Boolean, List[List[String]]) = {
 
-    // Controllo se esiste una riga o una colonna del DFG 
-    // dove sono tutti 0 perchè se così fosse allora
-    // si può skippare al seqCut
-    var isXor : Boolean = true
-    for(i <- 0 to DFG._2.length - 1) {
+  def xorCut(graph: Graph[String, String]) : (Boolean, ListBuffer[List[String]], Long, Array[Long]) = {
 
-      var checkXorRow : Int = 0
-      var checkXorCol : Int = 0
-      if(isXor == true) {
-        // RIGA
-        for(elem <- DFG._1(i)) {
-          if(elem == 1) {
-	    // NON E' UN SEQ
-            checkXorRow += 1
-          }
-        }
-        // COLONNA
-        for(elem <- DFG._1) {
-          if(elem(i) == 1) {
-	    // NON E' UN SEQ
-            checkXorCol += 1
-          }
-        }
+	var result = ListBuffer[List[String]]()
+	var isXor : Boolean = false
+	var newLogs: List[Graph[String,String]] = null
 
-        if(checkXorRow == 0 || checkXorCol == 0){
-          isXor = false
-        }
-      }
+	// calcola il numero di componenti connesse
+	var ccRes = cc(graph)
 
-    }
+	// Se il numero di componenti connesse è maggiore di 1 allora è uno xorCut
+	if(ccRes._1 > 1) {
+          result += List("X")
+	  isXor = true
+	  // xorSplit
+	  //newLogs = xorSplit(graph, ccRes._1, ccRes._2)
+	  // Aggiunge al risultato le liste delle attività del cut
+	  /*for(g <- newLogs) {
+	    var v = g.vertices.map(_._2).collect().toList
+	    result += v
+	  }*/
+	}
 
-    var result = ListBuffer[List[String]]()
-    // Se riga o colonna della prima attività 
-    // NON sono uguali a 0 allora è uno xorCut.
-    if(isXor) {
-      result += List("X")
-      // Per ogni attività si deve controllare
-      // i collegamenti, quindi dove vale 1
-      for((elem, index) <- DFG._2.zipWithIndex) {
-        var links = ListBuffer[String]()
-        links += elem
-        // Scorro la RIGA
-        for((value, index2) <- DFG._1(index).zipWithIndex) {
-          if(value == 1) {
-            // Se vale 1 allora è un collegamento
-            // e lo inserisco nella lista dei collegati
-            links += DFG._2(index2)
-          }
-        }
-        // Scorro la COLONNA
-        for((value2, index3) <- DFG._1.zipWithIndex) {
-          if(value2(index) == 1) {
-            // Se vale 1 allora è un collegamento
-            // e lo inserisco nella lista dei collegati
-            links += DFG._2(index3)
-          }
-        }
-        // A questo punto faccio il distinct delle attività
-        // in modo da non avere ripetizioni tra i collegamenti
-        // e le inserisco nella lista dei risultati
-        result += links.toList.distinct.sorted
-      }
-    }
-
-    // Trovo la lista con lunghezza maggiore
-    var maxLength : Int = 0
-    for(elem <- result) {
-      if(maxLength < elem.length) {
-        maxLength = elem.length
-      }
-    }
-
-    var result2 = new ListBuffer[List[String]]()
-    // Controllo tutte le liste con lunghezza
-    // minore di quella massima per vedere
-    // se è contenuta in una delle altre liste
-    for(elem <- result) {
-      if(elem.length < maxLength) {
-        for(a <- 0 until result.length) {
-          // Se è una sotto lista, va rimossa
-          if(elem.forall(result(a).contains) && (elem != result(a))) {
-            result2.+=(elem)
-          }
-        }
-      }
-    }
-
-    result2.toList
-
-    var res3 = result.diff(result2)
-    // La lista dei risultati ha di nuovo in distinct perchè
-    // così facendo elimino le liste uguali, cioè quelle che
-    // formano lo XOR lasciando solo le attività separate
-    val res = res3.toList.distinct.toList
-
-    // Il cut va fatto tra due liste di attività quindi
-    // se ne ho meno di 3 (perchè comprende anche
-    // il segno "X") allora non si tratta di uno xorCut.
-    if(res.length < 3) {
-      isXor = false
-    }
-
-    (isXor, res)
+	//(isXor, result.toList, newLogs)
+	(isXor, result, ccRes._1, ccRes._2)
   }
 
-  /**
-  * Sequence Cut
-  * 
-  * Return a List of List of String if the Sequence Cut is found in the log.
-  * Otherwhise return an empty list.
-  * Example : List(List(->), List(a), List(b, c, d, e, f, h))
-  * @return (Boolean, List[List[String]])
-  */
-  def sequenceCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String], Array[Array[Int]])) : (Boolean, List[List[String]]) = {
+  def seqCut(graph: Graph[String, String]) : (Boolean, ListBuffer[List[String]], Long, Array[Long]) = {
 
-    // Controllo se riga o colonna delle
-    // attività del DFG sono tutti 0
-    var allZero : Boolean = false
-    var seqActivity : Int = 0
-    for(i <- 0 to DFG._2.length - 1) {
+	var result = new ListBuffer[List[String]]()
+	var isSeq : Boolean = false
+	var newLogs : List[Graph[String,String]] = null
 
-      var checkSeqRow : Int = 0
-      var checkSeqCol : Int = 0
-      if(allZero == false) {
-        // RIGA
-        for(elem <- DFG._1(i)) {
-          if(elem == 1) {
-	    // NON E' UN SEQ
-            checkSeqRow += 1
-          }
-        }
-        // COLONNA
-        for(elem <- DFG._1) {
-          if(elem(i) == 1) {
-	    // NON E' UN SEQ
-            checkSeqCol += 1
-          }
-        }
+	// calcola il numero di componenti connesse
+	var ccRes = cc(graph)
 
-        if(checkSeqRow == 0 || checkSeqCol == 0){
-          allZero = true
-          seqActivity = i
-        }
-      }
+	if(ccRes._1 == 1) {
+	  var in = graph.collectNeighborIds(EdgeDirection.In).map{_._2.toList}.collect().toList
+	  if (in.contains(List())) {
+	    // Se il numero di componenti connesse è 1 ed esiste un vertice che non ha archi entranti allora è un sequenceCut
+	    isSeq = true
+	    result += List("-->")
+	    // sequenceSplit
+	    //newLogs = sequenceSplit(graph)
 
-    }
+	    // Aggiunge al risultato le liste delle attività del cut
+	    /*for(g <- newLogs) {
+	      var v = g.vertices.map(_._2).collect().toList
+	      result += v
+	    }*/
+	  }
+	}
 
-    var result = ListBuffer[List[String]]()
-    // Se riga o colonna sono uguali a 0 allora
-    // è un sequenceCut.
-    if(allZero) {
-      result += List("->")
-      result += List(DFG._2(seqActivity))
-      result += DFG._2.filter(_ != DFG._2(seqActivity))
-    }
-
-    val res = result.toList
-
-    // Il cut va fatto tra due liste di attività quindi
-    // se ne ho meno di 3 (perchè comprende anche il 
-    // segno "->") allora non si tratta di uno sequenceCut.
-    if (res.length < 3) {
-      allZero = false
-    }
-
-    (allZero, res)
+	//(isSeq, result.toList, newLogs)
+	(isSeq, result, ccRes._1, ccRes._2)
   }
 
   /**
   * Concurrent Cut
   * ToDo...
   */
-  def concurrentCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String], Array[Array[Int]])) : (Boolean, List[List[String]]) = {
-
-    (false, List(List()))
+  def concurrentCut(graph: Graph[String, String]) : Boolean = {
+	false
   }
 
   /**
   * Loop Cut
   * ToDo...
   */
-  def loopCut(log: List[List[String]], sc: SparkContext, DFG: (Array[Array[Int]], List[String], Array[Array[Int]])) : (Boolean, List[List[String]]) = {
-
-    (false, List(List()))
+  def loopCut(graph: Graph[String, String]) : Boolean = {
+	false
   }
-    
+  
 }

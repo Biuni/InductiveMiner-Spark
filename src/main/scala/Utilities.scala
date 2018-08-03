@@ -41,94 +41,38 @@ object Utilities {
     (IMf, threshold)
   }
 
-  // Get all activities in the log
-  def checkActivities(log: List[List[String]], sc: SparkContext) : List[String] = {
-    val rddLog = sc.parallelize(log)
-    val activities = rddLog.distinct().collect().toList.flatten.distinct.sorted
-    activities
+  /**
+  * cc
+  *
+  * Calcola e trova le componenti connesse del grafo
+  *
+  */
+  def cc(graph: Graph[String,String]) : (Long, Array[Long]) = {
+	
+	val components: VertexRDD[VertexId] = graph.connectedComponents().vertices.cache()
+
+	// Conta il numero di componenti connesse
+	val countCC = components.map{ case(_,cc) => cc }.distinct.count()
+	val getCC = components.map{ case(_,cc) => cc }.distinct.collect()
+
+	/*var CC = new ListBuffer[List[Long]]()
+	//var newGraphs = new ListBuffer[Graph[String,String]]()
+
+	// Print the vertices in that component
+	for(vertex <- getCC) {
+		var test = components.filter {
+		  case (id, component) => component == vertex
+		}.map(_._1).collect.toList
+		CC += test
+		var newGraph1 = graph.subgraph(vpred = (id,att) => test.contains(id))
+		newGraphs += newGraph1
+		//println("CC: " +test.toList)
+	}*/
+
+	//(countCC, newGraphs.toList.distinct)
+
+	(countCC, getCC)
   }
-  def printDFG(mAtr: Array[Array[Int]], sigma: List[String]) = {
-
-    val arr = sigma.toArray.sorted
-    print("       ")
-    for(a<-0 until sigma.length){
-      print(arr(a)+" ")
-    }
-    println("\n")
-    for(a<-0 until sigma.length){
-      print("   "+arr(a)+"   ")
-      for(b<-0 until sigma.length){
-        print(mAtr(a)(b)+" ")
-      }
-      println()
-    }
-    println("\n")
-
-  }
-
-  def OLDcreateDFG(log: List[List[String]], sc: SparkContext, imf: Boolean) : (Array[Array[Int]], List[String], Array[Array[Int]]) = {
-    //val rddLog = sc.parallelize(log)
-    //val activities = rddLog.distinct().collect().toList.flatten.distinct.sorted
-
-    val activities = checkActivities(log,sc)
-
-    val rddEdges = sc.parallelize(log)
-    var edges = rddEdges.map(list =>{
-      var aux = new ListBuffer[(String,String)]()
-      for(a <- 0 until list.length-1){
-        aux.+=((list(a),list(a+1)))
-      }
-      aux.toList
-    }).collect().toList.flatten
-
-    var matrix = new Array[Array[Int]](activities.length)
-    var matrixFreq = new Array[Array[Int]](activities.length)
-    var rddActivities = sc.parallelize(activities)
-
-    var arrT = rddActivities.map(list => {
-      var riga = activities.indexOf(list)
-      var arr =  new Array[Int](activities.length)
-      for(a<-0 until activities.length){
-        if(edges.contains((list,activities(a)))){
-          arr.update(a, 1)
-        }
-      }
-      (riga,arr)
-    }).sortByKey(true).collect()
-
-    if(imf) {
-      var arrFreq = rddActivities.map(list => {
-        var riga = activities.indexOf(list)
-        var arrFreq =  new Array[Int](activities.length)
-        for(a<-0 until activities.length) {
-	    if(edges.contains((list,activities(a)))) {
-     	      arrFreq.update(a, edges.count(_ == (list,activities(a))))
-              }
-	  }
-        (riga,arrFreq)
-    }).sortByKey(true).collect()
-
-    for(a<-0 until arrFreq.length){
-      matrixFreq(a)=arrFreq(a)._2
-    }
-
-    }
-
-    for(a<-0 until arrT.length){
-      matrix(a)=arrT(a)._2
-    }
-    
-    // Debug Only
-    printColor("purple","   Simple DFG\n")
-    printDFG(matrix, activities)
-    if(imf) {
-      printColor("purple","   DFG with frequencies\n")
-      printDFG(matrixFreq, activities)
-    }
-
-    (matrix, activities, matrixFreq)
-  }
-
 
   /**
   * createDFG
@@ -198,12 +142,121 @@ object Utilities {
 
     val typeOfCut = cut(0)(0) match {
       case "X"  => "- xorCut: "
-      case "->" => "- seqCut: "
+      case "-->" => "- seqCut: "
       case "||" => "- concurrentCut: "
       case "*"  => "- loopCut: "
     }
 
     printColor("green", typeOfCut + cut + "\n")
+
+  }
+
+  /**
+  * checkActivities
+  *
+  * Cerca tutte le attività presenti nel log
+  *
+  */
+  def checkActivities(log: List[List[String]], sc: SparkContext) : List[String] = {
+    val rddLog = sc.parallelize(log)
+    val activities = rddLog.distinct().collect().toList.flatten.distinct.sorted
+    activities
+  }
+
+  /**
+  * OLDcreateDFG
+  *
+  * Crea la matrice di adiacenza nodi-nodi del DFG tenendo conto, eventualmente, delle frequenze
+  *
+  */
+  def OLDcreateDFG(log: List[List[String]], sc: SparkContext, imf: Boolean) : (Array[Array[Int]], List[String], Array[Array[Int]]) = {
+    //val rddLog = sc.parallelize(log)
+    //val activities = rddLog.distinct().collect().toList.flatten.distinct.sorted
+
+    val activities = checkActivities(log,sc)
+
+    val rddEdges = sc.parallelize(log)
+    var edges = rddEdges.map(list =>{
+      var aux = new ListBuffer[(String,String)]()
+      for(a <- 0 until list.length-1){
+        aux.+=((list(a),list(a+1)))
+      }
+      aux.toList
+    }).collect().toList.flatten
+
+    var matrix = new Array[Array[Int]](activities.length)
+    var matrixFreq = new Array[Array[Int]](activities.length)
+    var rddActivities = sc.parallelize(activities)
+
+    var arrT = rddActivities.map(list => {
+      var riga = activities.indexOf(list)
+      var arr =  new Array[Int](activities.length)
+      for(a<-0 until activities.length){
+        if(edges.contains((list,activities(a)))){
+          arr.update(a, 1)
+        }
+      }
+      (riga,arr)
+    }).sortByKey(true).collect()
+
+    /**
+    * Crea la matrice di adiacenza nodi-nodi contando la frequenza con la quale un arco compare
+    */
+    if(imf) {
+      var arrFreq = rddActivities.map(list => {
+        var riga = activities.indexOf(list)
+        var arrFreq =  new Array[Int](activities.length)
+        for(a<-0 until activities.length) {
+	    if(edges.contains((list,activities(a)))) {
+     	      arrFreq.update(a, edges.count(_ == (list,activities(a))))
+              }
+	  }
+        (riga,arrFreq)
+    }).sortByKey(true).collect()
+
+    for(a<-0 until arrFreq.length){
+      matrixFreq(a)=arrFreq(a)._2
+    }
+
+    }
+
+    for(a<-0 until arrT.length){
+      matrix(a)=arrT(a)._2
+    }
+    
+    // Debug Only
+    printColor("purple","   Simple DFG\n")
+    printDFG(matrix, activities)
+    if(imf) {
+      printColor("purple","   DFG with frequencies\n")
+      printDFG(matrixFreq, activities)
+    }
+
+    (matrix, activities, matrixFreq)
+  }
+
+  /**
+  * printDFG
+  *
+  * Stampa la matrice di adiacenza nodi-nodi del DFG
+  *
+  */
+  def printDFG(mAtr: Array[Array[Int]], sigma: List[String]) = {
+
+    val arr = sigma.toArray.sorted
+    print("       ")
+    for(a<-0 until sigma.length){
+      print(arr(a)+" ")
+    }
+    println("\n")
+    for(a<-0 until sigma.length){
+      print("   "+arr(a)+"   ")
+      for(b<-0 until sigma.length){
+        print(mAtr(a)(b)+" ")
+      }
+      println()
+    }
+    println("\n")
 
   }
 

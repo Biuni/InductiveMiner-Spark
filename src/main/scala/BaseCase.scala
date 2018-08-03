@@ -2,6 +2,7 @@ package IM
 
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.graphx._
 
 object BaseCase {
 
@@ -13,75 +14,22 @@ object BaseCase {
   * it tries several base cases and returns the first matching one.
   * As the base cases are mutually exclusive, so their order is irrelevant.
   */
-  def checkBaseCase(log: List[List[String]], sc: SparkContext) : List[String] = {
+
+  def checkBaseCase(graph: Graph[String, String]) : List[String] = {
 
     // CODE: https://s22.postimg.cc/cucdu8t6p/Base_Case.jpg
 
     var result = ListBuffer[String]()
 
-    if(emptyLog(log, sc)) {
+    if(graph.vertices.isEmpty) {
       result += "tau"
-    } else if (singleActivity(log, sc)) {
-      result += log(0).head
+    } else if (graph.vertices.distinct.count() == 1) {
+      var act = graph.vertices.map{ case(_,cc) => cc }.collect().distinct.toList
+      result += act.map{ _.toString}.toString
     } else {
       result
     }
 
     result.toList
   }
-  
-  ///////////////////////////////////////////////////////////////////////////
-  // Operations
-  ///////////////////////////////////////////////////////////////////////////
-
-  /**
-  * Empty Log
-  * 
-  * Return true when the log contains no traces.
-  * False otherwise. 
-  * @return Boolean
-  */
-  def emptyLog(log: List[List[String]], sc: SparkContext) : Boolean = {
-
-    var result : Boolean = false
-    val rdd = sc.parallelize(log)
-    val checkLog = rdd.distinct.collect().toList
-
-    // Controllo se ho un solo tipo di tracce
-    if(checkLog.length == 1) {
-      // Controllo se la traccia è vuota
-      // quindi è un EmptyLog
-      if(checkLog(0).isEmpty) {
-        result = true
-      }
-    }
-
-    result
-  }
-
-  /**
-  * Single Activity
-  * 
-  * Return true when the log contains only traces with a single activity.
-  * False otherwise. 
-  * @return Boolean
-  */
-  def singleActivity(log: List[List[String]], sc: SparkContext) : Boolean = {
-
-    var result : Boolean = false
-    val rdd = sc.parallelize(log)
-    val checkLog = rdd.distinct.collect().toList
-
-    // Controllo se ho un solo tipo di tracce
-    if(checkLog.length == 1) {
-      // Controllo se la traccia non è vuota
-      // quindi è una SingleActivity
-      if(!checkLog(0).isEmpty) {
-        result = true
-      }
-    }
-
-    result
-  }
-
 }
