@@ -25,45 +25,16 @@ object Main extends App {
   // Example: Read log from Hadoop hosted file
   // val log = sc.textFile("hdfs://....")
 
-  /*val log = List(
-    List("a","b"),
-    List("c","c","c")
-  )*/
-
-  /*val vertexName: RDD[(VertexId, (String))] =
-    sc.parallelize(Array((1L, ("a")), (2L, ("b")),
-	               (3L, ("c"))))
-  // Create an RDD for edges
-  val edgeName: RDD[Edge[String]] =
-    sc.parallelize(Array(Edge(1L, 2L, "1"), Edge(3L, 3L, "1")))*/
-
-  /*val log = List(
+  val log = List(
     List("a","b","c"),
     List("a","c","b","h","c"),
-    List("a","d","e"),
-    List("a","d","e","f","d","e")
-  )*/
+    List("d","e"),
+    List("d","e","f","d","e")
+  )
 
-  val vertexName: RDD[(VertexId, (String))] =
-    sc.parallelize(Array((1L, ("a")), (2L, ("b")),
-	               (3L, ("c")), (4L, ("d")),
-	               (5L, ("e")), (6L, ("f")),
-	               (7L, ("h"))))
-  // Create an RDD for edges
-  val edgeName: RDD[Edge[String]] =
-    sc.parallelize(Array(Edge(1L, 2L, "1"), Edge(2L, 3L, "1"),
-	               Edge(1L, 3L, "1"),   Edge(3L, 2L, "1"),
-		       Edge(2L, 7L, "1"),   Edge(7L, 3L, "1"),
-		       Edge(1L, 4L, "1"),   Edge(4L, 5L, "1"),
-		       Edge(5L, 6L, "1"),   Edge(6L, 4L, "1")))
-
-  val graph = Graph(vertexName, edgeName)
-
-  //val IMtype = chooseIM()
+  val IMtype = chooseIM()
   
-  //IMFramework(log, sc, IMtype._1, IMtype._2)
-
-  IMFramework(graph)
+  IMFramework(log, sc, IMtype._1, IMtype._2)
 
   sc.stop
 
