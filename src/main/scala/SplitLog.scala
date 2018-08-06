@@ -20,7 +20,7 @@ object SplitLog {
     splitResult = result(0)(0) match {
       case "X" => xorSplit(log, result, countCC, getCC)
       case "-->" => sequenceSplit(log, result)
-      //case "||" => concurrentSplit(log, result, countCC, getCC)
+      //case "||" => concurrentSplit(log, result)
       //case "*" => loopSplit(log, result, countCC, getCC)
     }
 
@@ -97,8 +97,8 @@ object SplitLog {
   * Concurrent Split
   * ToDo...
   */
-  def concurrentSplit(graph: Graph[String,String], result: ListBuffer[List[String]], countCC: Long, getCC: Array[Long]) : Unit = {
-
+  def concurrentSplit(graph: Graph[String,String], result: ListBuffer[List[String]]) : Unit = {
+   
   }
 
   /**
