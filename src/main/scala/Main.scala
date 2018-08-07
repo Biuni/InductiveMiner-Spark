@@ -38,7 +38,7 @@ object Main extends App {
   )*/
 
   // Log di esempio per Imf
-  val log = List(
+  /*val log = List(
     List("a","b","c","d","e"),
     List("a","b","c","d","e"), 
     List("a","b","c","d","e"), 
@@ -91,6 +91,18 @@ object Main extends App {
     List("a","b","d","e","c"),  
     List("c","a","b"),
     List("a","h")
+  )*/
+
+  /*val log = List(
+    List("a","b","c"),
+    List("d","e","f"),
+    List("g","h","i")
+    )*/
+
+  val log = List(
+    List("a","b","c"),
+    List("b","e","f"),
+    List("g","h","i")
   )
 
   //graph.vertices.foreach(println)

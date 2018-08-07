@@ -40,8 +40,11 @@ object IMFramework {
 	//println(cut._2)
         // Avvia la ricorsione con i log splittati
         // (le due ricorsioni vanno eseguite in parallelo)
-        IMFramework(newLogs._1(0))
-        IMFramework(newLogs._1(1))
+	for( i <- 0 until newLogs._1.length) {
+        	IMFramework(newLogs._1(i))
+	}
+        //IMFramework(newLogs._1(0))
+        //IMFramework(newLogs._1(1))
       } else {
         // Se non esiste nessun cut si esegue il FallThrough
         // Next...
@@ -77,8 +80,9 @@ object IMFramework {
 	//println(cut._2)
         // Avvia la ricorsione con i log splittati
         // (le due ricorsioni vanno eseguite in parallelo)
-        IMFramework(newLogs._1(0))
-        IMFramework(newLogs._1(1))
+	for( i <- 0 until newLogs._1.length) {
+        	IMFramework(newLogs._1(i))
+	}
       } else {
 	  // Se non esiste un cut si filtra il log in base al threshold in input
    	  var graphFiltered = filterLog(graph,threshold)
