@@ -13,96 +13,59 @@ import FilterLog._
 
 object IMFramework {
 
-    // IM Framework
-    def IMFramework(graph: Graph[String, String]) : Unit = { 
+  /**
+  * IMFramework
+  * 
+  * The core of Inductive Miner.
+  */
+  def IMFramework(graph: Graph[String, String], imf: Boolean, threshold: Float) : Unit = { 
 
-    // Controlla se il log è un BaseCase
+    // Check if the DFG is a BaseCase
     var bc = checkBaseCase(graph)
-    // Se esiste un basecase (e quindi la lista non è vuota)
+    // If the DFG is BaseCase
     if(!bc.isEmpty) {
-      // Inserisco il BaseCase nella lista dell'albero
+      // Print the BaseCase
       printColor("green", "- baseCase: "+ bc +"\n")
-      //println("- baseCase: "+ bc +"\n")
     } else {
-      // Se non è un BaseCase si controlla l'esistenza di un cut e si splitta il log in base al cut trovato
-      // Example : List(List(->), List(a), List(b, c, d, e, f, h))
+      // If isn't a BaseCase check if exist a Cut
       var cut = checkFindCut(graph)
 
-      // Se esiste un cut (e quindi la lista non è vuota)
+      // If the Cut was found
       if(cut._1) {
-        // Stampo il cut
-        //printCut(cut._2)
-	// Faccio lo split in base al cut
-        // Example: List(List(List(a)), List(List(b,c),List(c,b,h,c),List(d,e),List(d,e,f,d,e))
+	// Split the DFG using the Cut
         var newLogs = checkSplitLog(graph, cut._2, cut._3, cut._4)
-	// Stampa il cut
-	printCut(cut._2.toList)	
-	//println(cut._2)
-        // Avvia la ricorsione con i log splittati
-        // (le due ricorsioni vanno eseguite in parallelo)
-	for( i <- 0 until newLogs._1.length) {
-        	IMFramework(newLogs._1(i))
-	}
-        //IMFramework(newLogs._1(0))
-        //IMFramework(newLogs._1(1))
-      } else {
-        // Se non esiste nessun cut si esegue il FallThrough
-        // Next...
-        // ##### FallThrough(log)
-      }
-    }
-  }
-
-  // IM Framework: Handling Deviating & Infrequent Behaviour
-  def IMFrameworkInf(graph: Graph[String, String], threshold: Float) : Unit = { 
-
-    // Controlla se il log è un BaseCase
-    var bc = checkBaseCase(graph)
-    // Se esiste un basecase (e quindi la lista non è vuota)
-    if(!bc.isEmpty) {
-      // Inserisco il BaseCase nella lista dell'albero
-      printColor("green", "- baseCase: "+ bc +"\n")
-      //println("- baseCase: "+ bc +"\n")
-    } else {
-      // Se non è un BaseCase si controlla l'esistenza di un cut e si splitta il log in base al cut trovato
-      // Example : List(List(->), List(a), List(b, c, d, e, f, h))
-      var cut = checkFindCut(graph)
-
-      // Se esiste un cut (e quindi la lista non è vuota)
-      if(cut._1) {
-        // Stampo il cut
-        //printCut(cut._2)
-	// Faccio lo split in base al cut
-        // Example: List(List(List(a)), List(List(b,c),List(c,b,h,c),List(d,e),List(d,e,f,d,e))
-        var newLogs = checkSplitLog(graph, cut._2, cut._3, cut._4)
-	// Stampa il cut
-	printCut(cut._2.toList)	
-	//println(cut._2)
-        // Avvia la ricorsione con i log splittati
-        // (le due ricorsioni vanno eseguite in parallelo)
-	for( i <- 0 until newLogs._1.length) {
-        	IMFramework(newLogs._1(i))
+        // Print the Cut
+	printCut(cut._2.toList)
+        // Start recursion using the splitted DFG
+	for(i <- 0 until newLogs._1.length) {
+          IMFramework(newLogs._1(i), imf, threshold)
 	}
       } else {
-	  // Se non esiste un cut si filtra il log in base al threshold in input
-   	  var graphFiltered = filterLog(graph,threshold)
-	  println("*** GRAPH FILTERED ***\n")
-	  println("* EDGES *\n")
-  	  graphFiltered.edges.foreach(println)
-	  println("\n* VERTICES *\n")
-	  graphFiltered.vertices.foreach(println)
-	  println("\n")
-	  // Se il grafo filtrato è diverso dal grafo iniziale allora si esegue IMf col grafo filtrato
-	  if (graphFiltered != graph) {
-	    IMFrameworkInf(graphFiltered,threshold)
-	  } else {
-	      // Se non esiste nessun cut e il grafo filtrato è uguale al grafo iniziale si esegue il FallThrough
-              // Next...
-              // ##### FallThrough(log)
-      }
-	}
-     }
+        if(imf) {
+          // If the IM type is Infrequent Behaviour
+          // Filter the DFG using the threshold
+          var graphFiltered = filterLog(graph, threshold)
+          // Print the filtered DFG
+          printDFG(graphFiltered, true)
+          // If the filtered DFG was different by initial DFG execute IM with the filtered DFG
+          if (graphFiltered != graph) {
+            IMFramework(graphFiltered, imf, threshold)
+          } else {
+            // If the cut don't exist and the filtered DFG
+            // is equal to initial DFG execute the FallThrogugh.
+            // ##### FallThrough(log)
+            printColor("red", "- FallThrough\n")
+          }
+        } else {
+          // If the cut don't exist. Do the FallThrough.
+          // ##### FallThrough(log)
+          printColor("red", "- FallThrough\n")
+        }
 
-  }
+      } // cut
+
+    } // baseCase
+
+  } // def
 
 }

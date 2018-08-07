@@ -14,7 +14,6 @@ object BaseCase {
   * it tries several base cases and returns the first matching one.
   * As the base cases are mutually exclusive, so their order is irrelevant.
   */
-
   def checkBaseCase(graph: Graph[String, String]) : List[String] = {
 
     // CODE: https://s22.postimg.cc/cucdu8t6p/Base_Case.jpg

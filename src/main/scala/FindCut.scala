@@ -15,13 +15,12 @@ object FindCut {
   * The IM searches for several cuts using the cut footprints.
   * It attempts to find cuts in the order: XOR, SEQUENCE, CONCURRENT, LOOP.
   */
-
   def checkFindCut(graph: Graph[String, String]) : (Boolean, ListBuffer[List[String]], Long, Array[Long]) = {
 
     // CODE: https://s22.postimg.cc/esj1sl17l/Find_Cut.jpg
+
     var cutFound : Boolean = false
     var result : ListBuffer[List[String]] = null
-    var newLogs: List[Graph[String,String]] = null
     var countCC : Long = -1
     var getCC : Array[Long] = null
 
@@ -30,17 +29,15 @@ object FindCut {
       // xorCut found
       cutFound = true
       result = xor._2
-      //newLogs = xor._3
       countCC = xor._3
       getCC = xor._4
     } else {
 
       val seq = seqCut(graph)
       if(seq._1) {
-	cutFound = true
         // sequenceCut found
+	cutFound = true
         result = seq._2
-        //newLogs = seq._3
         countCC = seq._3
         getCC = seq._4
       } else {
@@ -61,7 +58,6 @@ object FindCut {
       }
     }
 
-    //(cutFound, result, newLogs)
     (cutFound, result, countCC, getCC)
   }
   
@@ -72,66 +68,49 @@ object FindCut {
   /**
   * Xor Cut
   * 
-  * Return a List of List of String if the Xor Cut is found in the log.
-  * Otherwhise return an empty list.
-  * Example : List(List("X"), List("b","c","h"), List("d","e","f"))
-  * @return (Boolean, List[List[String]])
+  * Check if exist a xorCut.
   */
-
   def xorCut(graph: Graph[String, String]) : (Boolean, ListBuffer[List[String]], Long, Array[Long]) = {
 
-	var result = ListBuffer[List[String]]()
-	var isXor : Boolean = false
-	var newLogs: List[Graph[String,String]] = null
+    var result = ListBuffer[List[String]]()
+    var isXor : Boolean = false
 
-	// calcola il numero di componenti connesse
-	var ccRes = cc(graph)
+    // Count the Connected Components of the DFG.
+    var ccRes = countCC(graph)
 
-	// Se il numero di componenti connesse è maggiore di 1 allora è uno xorCut
-	if(ccRes._1 > 1) {
-          result += List("X")
-	  isXor = true
-	  // xorSplit
-	  //newLogs = xorSplit(graph, ccRes._1, ccRes._2)
-	  // Aggiunge al risultato le liste delle attività del cut
-	  /*for(g <- newLogs) {
-	    var v = g.vertices.map(_._2).collect().toList
-	    result += v
-	  }*/
-	}
+    // If the number of the CC is bigger than 1 is a xorCut.
+    if(ccRes._1 > 1) {
+      result += List("X")
+      isXor = true
+    }
 
-	//(isXor, result.toList, newLogs)
-	(isXor, result, ccRes._1, ccRes._2)
+    (isXor, result, ccRes._1, ccRes._2)
   }
 
+  /**
+  * Seq Cut
+  * 
+  * Check if exist a seqCut.
+  */
   def seqCut(graph: Graph[String, String]) : (Boolean, ListBuffer[List[String]], Long, Array[Long]) = {
 
-	var result = new ListBuffer[List[String]]()
-	var isSeq : Boolean = false
-	var newLogs : List[Graph[String,String]] = null
+    var result = new ListBuffer[List[String]]()
+    var isSeq : Boolean = false
 
-	// calcola il numero di componenti connesse
-	var ccRes = cc(graph)
+    // Count the Connected Components of the DFG.
+    var ccRes = countCC(graph)
 
-	if(ccRes._1 == 1) {
-	  var in = graph.collectNeighborIds(EdgeDirection.In).map{_._2.toList}.collect().toList
-	  if (in.contains(List())) {
-	    // Se il numero di componenti connesse è 1 ed esiste un vertice che non ha archi entranti allora è un sequenceCut
-	    isSeq = true
-	    result += List("-->")
-	    // sequenceSplit
-	    //newLogs = sequenceSplit(graph)
+    // If there's only 1 Connected Component in the DFG
+    if(ccRes._1 == 1) {
+      var in = graph.collectNeighborIds(EdgeDirection.In).map{_._2.toList}.collect().toList
+      // If exist a vertex with all incoming or outgoing edges is a seqCut.
+      if (in.contains(List())) {
+        result += List("-->")
+        isSeq = true
+      }
+    }
 
-	    // Aggiunge al risultato le liste delle attività del cut
-	    /*for(g <- newLogs) {
-	      var v = g.vertices.map(_._2).collect().toList
-	      result += v
-	    }*/
-	  }
-	}
-
-	//(isSeq, result.toList, newLogs)
-	(isSeq, result, ccRes._1, ccRes._2)
+    (isSeq, result, ccRes._1, ccRes._2)
   }
 
   /**
@@ -140,7 +119,7 @@ object FindCut {
   */
   def concurrentCut(graph: Graph[String, String]) : Boolean = {
 	
-	false
+    false
   }
 
   /**
@@ -148,7 +127,8 @@ object FindCut {
   * ToDo...
   */
   def loopCut(graph: Graph[String, String]) : Boolean = {
-	false
+
+    false
   }
   
 }
