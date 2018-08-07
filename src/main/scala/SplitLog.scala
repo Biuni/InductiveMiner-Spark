@@ -12,14 +12,14 @@ object SplitLog {
   * After finding a cut, the IM framework splits the log into several sub-logs,
   * on which recursion continues.
   */
-  def checkSplitLog(graph: Graph[String,String], result: ListBuffer[List[String]], countCC: Long, getCC: Array[Long]) : (List[Graph[String,String]], List[List[String]]) = {
+  def checkSplitLog(graph: Graph[String,String], result: ListBuffer[List[String]], countCC: Long, getCC: Array[Long], lst: List[Long]) : (List[Graph[String,String]], List[List[String]]) = {
 
     // CODE: https://s22.postimg.cc/c684p44g1/splitlof.jpg
 
     var splitResult : (List[Graph[String,String]], List[List[String]]) = (null, null)
     splitResult = result(0)(0) match {
       case "X" => xorSplit(graph, result, countCC, getCC)
-      case "-->" => sequenceSplit(graph, result)
+      case "-->" => sequenceSplit(graph, result, lst)
       case "||" => concurrentSplit(graph, result)
       case "*" => loopSplit(graph, result)
     }
@@ -64,13 +64,10 @@ object SplitLog {
   * 
   * Split the DFG using the Seq Cut found.
   */
-  def sequenceSplit(graph: Graph[String,String], result: ListBuffer[List[String]]) : (List[Graph[String,String]], List[List[String]]) = {
+  def sequenceSplit(graph: Graph[String,String], result: ListBuffer[List[String]], lst: List[Long]) : (List[Graph[String,String]], List[List[String]]) = {
 
     var newLogs = new ListBuffer[Graph[String,String]]()
-    var in = graph.collectNeighborIds(EdgeDirection.In).map{_._2.toList}.collect().toList
-    var i = in.indexOf(List())
-    // List of vertices with incoming edges
-    val lst = graph.inDegrees.map(x => x._1).collect.toList
+	
     // Create graph with vertices don't have incoming edges
     newLogs += graph.subgraph(vpred = (id,att) => !lst.contains(id))
     // Create graph with vertices have only incoming edges

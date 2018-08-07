@@ -33,7 +33,7 @@ object IMFramework {
       // If the Cut was found
       if(cut._1) {
 	// Split the DFG using the Cut
-        var newLogs = checkSplitLog(graph, cut._2, cut._3, cut._4)
+        var newLogs = checkSplitLog(graph, cut._2, cut._3, cut._4, cut._5)
         // Print the Cut
 	printCut(cut._2.toList)
         // Start recursion using the splitted DFG
