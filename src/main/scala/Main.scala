@@ -22,7 +22,9 @@ object Main extends App {
   printColor("yellow", "* Università Politecnica delle Marche *")
   println("\n")
 
-  val log = sc.textFile("/home/biuni/Scrivania/InductiveMiner-Spark/src/main/scala/logExample/log2.txt")
+  val logFile = chooseLog()
+
+  val log = sc.textFile(logFile)
             .map(line => line.split(",").toList)
             .collect.toList
 

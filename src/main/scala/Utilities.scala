@@ -11,6 +11,39 @@ import scala.util.MurmurHash
 object Utilities {
 
   /**
+  * chooseLog
+  * 
+  * Choose the log file
+  */
+  def chooseLog() : (String) = {
+
+    printColor("cyan", "List of available log files.\n")
+
+    val dirName = System.getProperty("user.dir") + "/src/main/scala/logExample"
+    val listOfLog = new java.io.File(dirName).listFiles.filter(_.isFile)
+      .filter(_.getName.endsWith(".txt"))
+      .map(_.getPath).toList
+
+    listOfLog.zipWithIndex.foreach {
+      case(file, count) => println(s"$count) $file")
+    }
+
+    val maxNumber = listOfLog.length - 1
+    print("\n~ Digit (from 0 to "+ maxNumber +"): ")
+    var choose: Int = scala.io.StdIn.readInt()
+
+    while(choose < 0 || choose > maxNumber) {
+      printColor("red", "* File not valid! *")
+      print("\n~ Digit (from 0 to "+ maxNumber +"): ")
+      choose = scala.io.StdIn.readInt()
+    }
+
+    println()
+
+    (listOfLog(choose))
+  }
+
+  /**
   * chooseIM
   * 
   * Choose the type of Inductive Miner
