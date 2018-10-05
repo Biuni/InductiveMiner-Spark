@@ -25,20 +25,20 @@ object FindCut {
     var getCC : Array[Long] = null
     var lst : List[Long] = null
 
-    // Check if there's a xorCut
+    // Check if exist a xorCut
     val xor = xorCut(graph)
     if(xor._1) {
-      // xorCut FOUND
+      // xorCut FOUNDED
       cutFound = true
       result = xor._2
       countCC = xor._3
       getCC = xor._4
     } else {
 
-      // Check if there's a sequenceCut
+      // Check if exist a sequenceCut
       val seq = seqCut(graph)
       if(seq._1) {
-        // sequenceCut FOUND
+        // sequenceCut FOUNDED
 	cutFound = true
         result = seq._2
         countCC = seq._3
@@ -46,14 +46,16 @@ object FindCut {
 	lst = seq._5
       } else {
 
+       // Check if exist a concurrentCut
        val concurrent = concurrentCut(graph)
         if(concurrent) {
-          // concurrentCut FOUND
+          // concurrentCut FOUNDED
         } else {
 
+          // Check if exist a loopCut
           val loop = loopCut(graph)
           if(loop) {
-            // loopCut FOUND
+            // loopCut FOUNDED
           } else {
 	    // NO Cut FOUND
             cutFound = false
