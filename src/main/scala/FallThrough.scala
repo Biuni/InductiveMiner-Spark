@@ -30,7 +30,7 @@ object FallThrough {
 
   /**
   * Empty Traces
-  * ToDo...
+  * TODO...
   */
   def emptyTraces(log: List[List[String]], sc: SparkContext) : Unit = {
 
@@ -38,7 +38,7 @@ object FallThrough {
 
   /**
   * Activity Once Per Trace
-  * ToDo...
+  * TODO...
   */
   def activityOncePerTrace(log: List[List[String]], sc: SparkContext) : Unit = {
 
@@ -46,7 +46,7 @@ object FallThrough {
 
   /**
   * Activity Concurrent
-  * ToDo...
+  * TODO...
   */
   def activityConcurrent(log: List[List[String]], sc: SparkContext) : Unit = {
 
@@ -54,7 +54,7 @@ object FallThrough {
 
   /**
   * Strict Tau Loop
-  * ToDo...
+  * TODO...
   */
   def strictTauLoop(log: List[List[String]], sc: SparkContext) : Unit = {
 
@@ -62,7 +62,7 @@ object FallThrough {
 
   /**
   * Tau Loop
-  * ToDo...
+  * TODO...
   */
   def tauLoop(log: List[List[String]], sc: SparkContext) : Unit = {
 
@@ -70,7 +70,7 @@ object FallThrough {
 
   /**
   * Flower Model
-  * ToDo...
+  * TODO...
   */
   def flowerModel(log: List[List[String]], sc: SparkContext) : Unit = {
 
