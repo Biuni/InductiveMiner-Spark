@@ -22,17 +22,22 @@ object Main extends App {
   printColor("yellow", "* Università Politecnica delle Marche *")
   println("\n")
 
+  // Choose the Log File
   val logFile = chooseLog()
 
+  // Create a list of list from the Log File
   val log = sc.textFile(logFile)
             .map(line => line.split(",").toList)
             .collect.toList
 
+  // Choose the IM Algorithm
   val IMtype = chooseIM()
   var graph = createDFG(log, IMtype._1, sc)
 
+  // Print to terminal the DFG
   printDFG(graph, false)
 
+  // Run the inductive miner core
   IMFramework(graph, IMtype._1, IMtype._2)
 
   sc.stop

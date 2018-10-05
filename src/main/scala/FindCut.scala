@@ -23,20 +23,22 @@ object FindCut {
     var result : ListBuffer[List[String]] = null
     var countCC : Long = -1
     var getCC : Array[Long] = null
-var lst : List[Long] = null
+    var lst : List[Long] = null
 
+    // Check if there's a xorCut
     val xor = xorCut(graph)
     if(xor._1) {
-      // xorCut found
+      // xorCut FOUND
       cutFound = true
       result = xor._2
       countCC = xor._3
       getCC = xor._4
     } else {
 
+      // Check if there's a sequenceCut
       val seq = seqCut(graph)
       if(seq._1) {
-        // sequenceCut found
+        // sequenceCut FOUND
 	cutFound = true
         result = seq._2
         countCC = seq._3
@@ -46,14 +48,14 @@ var lst : List[Long] = null
 
        val concurrent = concurrentCut(graph)
         if(concurrent) {
-          // concurrentCut found
+          // concurrentCut FOUND
         } else {
 
           val loop = loopCut(graph)
           if(loop) {
-            // loopCut found
+            // loopCut FOUND
           } else {
-	    // NO Cut found
+	    // NO Cut FOUND
             cutFound = false
           }
         }
@@ -105,21 +107,24 @@ var lst : List[Long] = null
 
     // If there's only 1 Connected Component in the DFG
     if(ccRes._1 == 1) {
+      // Collect all incoming vertices
       var in = graph.collectNeighborIds(EdgeDirection.In).map{_._2.toList}.collect().toList
+      // Collect all outgoing vertices
       var out = graph.collectNeighborIds(EdgeDirection.Out).map{_._2.toList}.collect().toList
 
       if(in.indexOf(List()) != -1) {
-       	// lista di vertici con archi entranti
+       	// List of vertices with incoming edges
 	lst = graph.inDegrees.map(x => x._1).collect.toList
       } else {
           if(out.indexOf(List()) != -1) {
+            // List of vertices with outgoing edges
 	    lst = graph.outDegrees.map(x => x._1).collect.toList
 	    if(!in.contains(lst)) {
 	      lst = lst.filter(_ < 0)
 	    }
 	  }
 	}
-
+        
 	if( ((in.contains(List())) || (out.contains(List()))) && (!lst.isEmpty) ) {
 	  result += List("-->")
           isSeq = true
@@ -131,7 +136,7 @@ var lst : List[Long] = null
 
   /**
   * Concurrent Cut
-  * ToDo...
+  * TODO...
   */
   def concurrentCut(graph: Graph[String, String]) : Boolean = {
 	
@@ -140,7 +145,7 @@ var lst : List[Long] = null
 
   /**
   * Loop Cut
-  * ToDo...
+  * TODO...
   */
   def loopCut(graph: Graph[String, String]) : Boolean = {
 

@@ -78,7 +78,7 @@ object Utilities {
   * createDFG
   *
   * Create the Direct Follow Graph using
-  * the graphx library.
+  * the Graphx library.
   *
   */
   def createDFG(log: List[List[String]], imf: Boolean, sc: SparkContext) : Graph[String,String] = {
@@ -89,7 +89,7 @@ object Utilities {
       .toMap
     val vertexNames = sc.parallelize(vertexMap.toSeq.map(_.swap))
 
-    // Create the DFG without count frequencies
+    // Create the DFG without counts frequencies
     if(!imf) {
       val edgeSet = log
         .filter(_.size > 1)
