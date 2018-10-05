@@ -20,8 +20,8 @@ object SplitLog {
     splitResult = result(0)(0) match {
       case "X" => xorSplit(graph, result, countCC, getCC)
       case "-->" => sequenceSplit(graph, result, lst)
-      case "||" => concurrentSplit(graph, result)
-      case "*" => loopSplit(graph, result)
+      case "||" => concurrentSplit(graph, result) // TODO
+      case "*" => loopSplit(graph, result) // TODO
     }
 
     (splitResult._1, splitResult._2)
@@ -39,18 +39,18 @@ object SplitLog {
   def xorSplit(graph: Graph[String,String], result: ListBuffer[List[String]], countCC: Long, getCC: Array[Long]) : (List[Graph[String,String]], List[List[String]]) = {
     
     val components = graph.connectedComponents().vertices.cache()
-    var CC = new ListBuffer[List[Long]]()
     var newLogs = new ListBuffer[Graph[String,String]]()
 
+    // Split DFG into sub-DFGs using connected components
     for(vertex <- getCC) {
-      var test = components.filter {
+      var vertices = components.filter {
 	case (id, component) => component == vertex
 	}.map(_._1).collect.toList
-      CC += test
-      var newLog = graph.subgraph(vpred = (id,att) => test.contains(id))
+      var newLog = graph.subgraph(vpred = (id,att) => vertices.contains(id))
       newLogs += newLog
     }
 
+    // Add DFGs vertices to 'result'
     for(g <- newLogs) {
       var v = g.vertices.map(_._2).collect().toList
       result += v
@@ -68,9 +68,9 @@ object SplitLog {
 
     var newLogs = new ListBuffer[Graph[String,String]]()
 	
-    // Create graph with vertices don't have incoming edges
+    // Add to 'newLogs' the graph with vertices that don't have incoming edges
     newLogs += graph.subgraph(vpred = (id,att) => !lst.contains(id))
-    // Create graph with vertices have only incoming edges
+    // Add to 'newLogs' the graph with vertices that have only incoming edges
     newLogs += graph.subgraph(vpred = (id,att) => lst.contains(id))
 
     // Add to result the lists of cut's activities
@@ -84,7 +84,7 @@ object SplitLog {
 
   /**
   * Concurrent Split
-  * ToDo...
+  * TODO...
   */
   def concurrentSplit(graph: Graph[String,String], result: ListBuffer[List[String]]) : (List[Graph[String,String]], List[List[String]]) = {
 
@@ -93,7 +93,7 @@ object SplitLog {
 
   /**
   * Loop Split
-  * ToDo...
+  * TODO...
   */
   def loopSplit(graph: Graph[String,String], result: ListBuffer[List[String]]) : (List[Graph[String,String]], List[List[String]]) = {
 
