@@ -1,6 +1,6 @@
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{ SparkConf, SparkContext }
 import org.apache.spark.graphx._
-import org.apache.log4j.{Level, Logger}
+import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.rdd.RDD
 
 import IM.IMFramework._
@@ -27,8 +27,8 @@ object Main extends App {
 
   // Create a list of list from the Log File
   val log = sc.textFile(logFile)
-            .map(line => line.split(",").toList)
-            .collect.toList
+    .map(line => line.split(",").toList)
+    .collect.toList
 
   // Choose the IM Algorithm
   val IMtype = chooseIM()

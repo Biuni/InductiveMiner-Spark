@@ -1,6 +1,6 @@
 package IM
 
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{ SparkConf, SparkContext }
 import org.apache.spark.graphx._
 import org.apache.spark.rdd._
 
@@ -11,11 +11,11 @@ import scala.util.MurmurHash
 object Utilities {
 
   /**
-  * chooseLog
-  * 
-  * Choose the log file
-  */
-  def chooseLog() : (String) = {
+   * chooseLog
+   *
+   * Choose the log file
+   */
+  def chooseLog(): (String) = {
 
     printColor("cyan", "List of available log files.\n")
 
@@ -25,16 +25,16 @@ object Utilities {
       .map(_.getPath).toList
 
     listOfLog.zipWithIndex.foreach {
-      case(file, count) => println(s"$count) $file")
+      case (file, count) => println(s"$count) $file")
     }
 
     val maxNumber = listOfLog.length - 1
-    print("\n~ Digit (from 0 to "+ maxNumber +"): ")
+    print("\n~ Digit (from 0 to " + maxNumber + "): ")
     var choose: Int = scala.io.StdIn.readInt()
 
-    while(choose < 0 || choose > maxNumber) {
+    while (choose < 0 || choose > maxNumber) {
       printColor("red", "* File not valid! *")
-      print("\n~ Digit (from 0 to "+ maxNumber +"): ")
+      print("\n~ Digit (from 0 to " + maxNumber + "): ")
       choose = scala.io.StdIn.readInt()
     }
 
@@ -44,11 +44,11 @@ object Utilities {
   }
 
   /**
-  * chooseIM
-  * 
-  * Choose the type of Inductive Miner
-  */
-  def chooseIM() : (Boolean, Float) = {
+   * chooseIM
+   *
+   * Choose the type of Inductive Miner
+   */
+  def chooseIM(): (Boolean, Float) = {
 
     printColor("cyan", "Choose a variant of Inductive Miner:\n")
     printColor("cyan", "1 - Inductive Miner (IM)")
@@ -60,11 +60,11 @@ object Utilities {
     var threshold: Float = -1
     var choose: Int = scala.io.StdIn.readInt()
 
-    if(choose == 2) {
+    if (choose == 2) {
       IMf = true
       print("~ Set a noise threshold (0 to 1): ")
       threshold = scala.io.StdIn.readFloat()
-      while(threshold < 0 || threshold > 1) {
+      while (threshold < 0 || threshold > 1) {
         printColor("red", "* Threshold not valid! *")
         print("~ Set a noise threshold (0 to 1): ")
         threshold = scala.io.StdIn.readFloat()
@@ -75,13 +75,13 @@ object Utilities {
   }
 
   /**
-  * createDFG
-  *
-  * Create the Direct Follow Graph using
-  * the Graphx library.
-  *
-  */
-  def createDFG(log: List[List[String]], imf: Boolean, sc: SparkContext) : Graph[String,String] = {
+   * createDFG
+   *
+   * Create the Direct Follow Graph using
+   * the Graphx library.
+   *
+   */
+  def createDFG(log: List[List[String]], imf: Boolean, sc: SparkContext): Graph[String, String] = {
 
     val vertices = log.flatMap(x => x).toSet.toSeq
     val vertexMap = (0 until vertices.size)
@@ -90,21 +90,21 @@ object Utilities {
     val vertexNames = sc.parallelize(vertexMap.toSeq.map(_.swap))
 
     // Create the DFG without counts frequencies
-    if(!imf) {
+    if (!imf) {
       val edgeSet = log
         .filter(_.size > 1)
-        .flatMap(list => list.indices.tail.map(i => list(i-1) -> list(i)))
+        .flatMap(list => list.indices.tail.map(i => list(i - 1) -> list(i)))
         .map(x => Edge(vertexMap(x._1), vertexMap(x._2), "1"))
         .toSet
       val edges = sc.parallelize(edgeSet.toSeq)
-      
+
       Graph(vertexNames, edges)
 
-    // Create the DFG with frequencies stored into edges weight
+      // Create the DFG with frequencies stored into edges weight
     } else {
       val edgeSet2 = log
         .filter(_.size > 1)
-        .flatMap(list => list.indices.tail.map(i => list(i-1) -> list(i))).toList
+        .flatMap(list => list.indices.tail.map(i => list(i - 1) -> list(i))).toList
       val edgeSet = edgeSet2
         .map(x => Edge(vertexMap(x._1), vertexMap(x._2), edgeSet2.count(_ == x).toString))
         .toSet
@@ -115,30 +115,30 @@ object Utilities {
   }
 
   /**
-  * countCC
-  *
-  * Count the connected 
-  * components of the graph.
-  */
-  def countCC(graph: Graph[String,String]) : (Long, Array[Long]) = {
+   * countCC
+   *
+   * Count the connected
+   * components of the graph.
+   */
+  def countCC(graph: Graph[String, String]): (Long, Array[Long]) = {
 
     val components = graph.connectedComponents().vertices.cache()
-    val countCC = components.map{ case(_,cc) => cc }.distinct.count()
-    val getCC = components.map{ case(_,cc) => cc }.distinct.collect()
-    
+    val countCC = components.map { case (_, cc) => cc }.distinct.count()
+    val getCC = components.map { case (_, cc) => cc }.distinct.collect()
+
     (countCC, getCC)
   }
 
   /**
-  * printDFG
-  * 
-  * Print the Direct Follow Graph
-  */
-  def printDFG(graph: Graph[String,String], filtered: Boolean) : Unit = {
+   * printDFG
+   *
+   * Print the Direct Follow Graph
+   */
+  def printDFG(graph: Graph[String, String], filtered: Boolean): Unit = {
 
     printColor("purple", "\n*********************************")
     printColor("purple", "*** DFG - Direct Follow Graph ***")
-    if(filtered) {
+    if (filtered) {
       printColor("purple", "*********** FILTERED ************")
     }
     printColor("purple", "*********************************")
@@ -152,11 +152,11 @@ object Utilities {
   }
 
   /**
-  * printColor
-  * 
-  * Print colored text into console
-  */
-  def printColor(color: String, text: String) : Unit = {
+   * printColor
+   *
+   * Print colored text into console
+   */
+  def printColor(color: String, text: String): Unit = {
 
     val colorCode = color match {
       case "black"  => "30"
@@ -168,23 +168,23 @@ object Utilities {
       case "cyan"   => "36"
       case "white"  => "37"
     }
- 
+
     println("\u001b[" + colorCode + "m" + text + "\u001b[0m")
 
   }
 
   /**
-  * printCut
-  * 
-  * Print the found cut
-  */
-  def printCut(cut: List[List[String]]) : Unit = {
+   * printCut
+   *
+   * Print the found cut
+   */
+  def printCut(cut: List[List[String]]): Unit = {
 
     val typeOfCut = cut(0)(0) match {
-      case "X"  => "- xorCut: "
+      case "X"   => "- xorCut: "
       case "-->" => "- seqCut: "
-      case "||" => "- concurrentCut: "
-      case "*"  => "- loopCut: "
+      case "||"  => "- concurrentCut: "
+      case "*"   => "- loopCut: "
     }
 
     printColor("green", typeOfCut + cut + "\n")
