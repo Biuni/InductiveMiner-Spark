@@ -22,18 +22,22 @@ object IMFramework {
 
     // Check if the DFG is a BaseCase
     var bc = checkBaseCase(graph)
+
     // If the DFG is BaseCase
     if (!bc.isEmpty) {
       // Print the BaseCase
       printColor("green", "- baseCase: " + bc + "\n")
     } else {
+
       // If isn't a BaseCase check if exist a Cut
       var cut = checkFindCut(graph)
 
       // If the Cut was found
       if (cut._1) {
+
         // Split the DFG using the Cut
         var newLogs = checkSplitLog(graph, cut._2, cut._3, cut._4, cut._5)
+
         // Print the Cut
         printCut(cut._2.toList)
         // Start recursion using the splitted DFG

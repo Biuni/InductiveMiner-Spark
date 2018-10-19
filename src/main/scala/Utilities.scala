@@ -72,7 +72,7 @@ object Utilities {
         .flatMap(list => list.indices.tail.map(i => list(i-1) -> list(i)))
         .map(x => Edge(vertexMap(x._1), vertexMap(x._2), "1"))
         .toSet
-      val edges = sc.parallelize(edgeSet.toSeq)
+      var edges = sc.parallelize(edgeSet.toSeq)
       
       Graph(vertexNames, edges)
 
@@ -84,9 +84,10 @@ object Utilities {
       val edgeSet = edgeSet2
         .map(x => Edge(vertexMap(x._1), vertexMap(x._2), edgeSet2.count(_ == x).toString))
         .toSet
-      val edges = sc.parallelize(edgeSet.toSeq)
+      var edges = sc.parallelize(edgeSet.toSeq)
+      var edges1 = edges.sortBy(e => e.srcId)
 
-      Graph(vertexNames, edges)
+      Graph(vertexNames, edges1)
     }
   }
 

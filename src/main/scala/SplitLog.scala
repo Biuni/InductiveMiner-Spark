@@ -12,13 +12,13 @@ object SplitLog {
    * After finding a cut, the IM framework splits the log into several sub-logs,
    * on which recursion continues.
    */
-  def checkSplitLog(graph: Graph[String, String], result: ListBuffer[List[String]], countCC: Long, getCC: Array[Long], lst: List[Long]): (List[Graph[String, String]], List[List[String]]) = {
+  def checkSplitLog(graph: Graph[String, String], result: ListBuffer[List[String]], getCC: Array[Long], lst: List[Long], components: VertexRDD[Long]): (List[Graph[String, String]], List[List[String]]) = {
 
     // CODE: https://s22.postimg.cc/c684p44g1/splitlof.jpg
 
     var splitResult: (List[Graph[String, String]], List[List[String]]) = (null, null)
     splitResult = result(0)(0) match {
-      case "X"   => xorSplit(graph, result, countCC, getCC)
+      case "X"   => xorSplit(graph, result, getCC, components)
       case "-->" => sequenceSplit(graph, result, lst)
       case "||"  => concurrentSplit(graph, result) // TODO
       case "*"   => loopSplit(graph, result) // TODO
@@ -36,17 +36,17 @@ object SplitLog {
    *
    * Split the DFG using the Xor Cut found.
    */
-  def xorSplit(graph: Graph[String, String], result: ListBuffer[List[String]], countCC: Long, getCC: Array[Long]): (List[Graph[String, String]], List[List[String]]) = {
+  def xorSplit(graph: Graph[String, String], result: ListBuffer[List[String]], getCC: Array[Long], components: VertexRDD[Long]): (List[Graph[String, String]], List[List[String]]) = {
 
-    val components = graph.connectedComponents().vertices.cache()
     var newLogs = new ListBuffer[Graph[String, String]]()
 
-    // Split DFG into sub-DFGs using connected components
+    // Split DFG into sub-DFGs using connected components and add DFGs vertices to 'result'
     for (vertex <- getCC) {
       var vertices = components.filter {
         case (id, component) => component == vertex
       }.map(_._1).collect.toList
       var newLog = graph.subgraph(vpred = (id, att) => vertices.contains(id))
+      //result += newLog.vertices.map(_._2).collect().toList
       newLogs += newLog
     }
 
@@ -55,7 +55,7 @@ object SplitLog {
       var v = g.vertices.map(_._2).collect().toList
       result += v
     }
-
+//println("NNNNNN: "+newLogs._1)
     (newLogs.toList.distinct, result.toList)
   }
 
@@ -74,10 +74,13 @@ object SplitLog {
     newLogs += graph.subgraph(vpred = (id, att) => lst.contains(id))
 
     // Add to result the lists of cut's activities
-    for (g <- newLogs) {
+    result += newLogs(0).vertices.map(_._2).collect().toList
+    result += newLogs(1).vertices.map(_._2).collect().toList
+
+    /*for (g <- newLogs) {
       var v = g.vertices.map(_._2).collect().toList
       result += v
-    }
+    }*/
 
     (newLogs.toList.distinct, result.toList)
   }

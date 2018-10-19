@@ -8,9 +8,12 @@ import IM.Utilities._
 
 object Main extends App {
 
+  // Start Time
+  val t1 = System.nanoTime()
+
   val conf = new SparkConf()
     .setAppName("InductiveMIner")
-    .setMaster("local[1]")
+    .setMaster("local[4]")
   val sc = new SparkContext(conf)
   val rootLogger = Logger
     .getRootLogger()
@@ -32,11 +35,17 @@ object Main extends App {
   // Create the DFG
   var graph = createDFG(log, params._2, sc)
 
+  graph.cache()
+
   // Print to terminal the DFG
   printDFG(graph, false)
 
   // Run the inductive miner core
   IMFramework(graph, params._2, params._3)
+
+  // Execution Time
+  val duration = (System.nanoTime()-t1)/1e9d
+  println("EXECUTION TIME: " +duration+ " seconds.")
 
   sc.stop
 
