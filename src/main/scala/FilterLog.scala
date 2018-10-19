@@ -4,6 +4,7 @@ import scala.collection.mutable.ListBuffer
 import org.apache.spark.{ SparkConf, SparkContext }
 import org.apache.spark.graphx._
 import org.apache.spark.rdd._
+import scala.collection.mutable.ArrayBuffer
 
 object FilterLog {
 
@@ -21,78 +22,129 @@ object FilterLog {
     var isUnd: (Boolean, Int) = null // to establish if there's an edge that it under-threshold and its position
     var isUnder: Boolean = false
     var pos: Int = -1
-    var edgeCount = graph.edges.count()
+    var edges = graph.edges
+    var edgeCount = edges.count()
     var edgeDel: Int = -1
     var srcDel = new ListBuffer[Long]()
     var dstDel = new ListBuffer[Long]()
+    var toDeleteSrc = new ListBuffer[(List[Long])]()
+    var toDeleteDst = new ListBuffer[(List[Long])]()
 
+	var e : Edge[String] = null
+	var g2 = graph
+	var j : Int = -1
+	var g : Int = -1
     /** Create array of source vertices and destination vertices to delete **/
-    var toDelete: Array[(List[Long], List[Long])] = graph.triplets.map(triplet => {
+    //var toDelete: Array[(List[Long], List[Long])] = graph.triplets.map(triplet => {
+for(k <- 0 until edgeCount.toInt) {
+	g = g + 1
+	println("GGGGGGGGGGG: "+g)
+		j = j + 1
+	println("JJJJJJJJJJJJJJ: "+j)
       // Add to 'src' and 'dst' source IDs and destination IDs of all edges
-      src += triplet.srcId
-      dst += triplet.dstId
+      e = g2.edges.first()
+      src += e.srcId
+println("SRC: "+src)
+      dst += e.dstId
 
+println("DST: "+dst)
       // Foreach edge add its weight
-      weights += triplet.attr
+      weights += e.attr
 
       // If it is the first edge then analyze the second
       if (src.length > 1) {
         /* If edge-i hasn't the same source vertex than previous edge then
          * evaluate frequencies of all edges that have the same source vertex
          */
-        if (src(i) != src(i - 1)) {
+        if (src(g) != src(g - 1)) {
+println("TTT")
           // Delete weight of current edge that has different vertex source
-          weights -= triplet.attr
+          weights -= e.attr
           // Check if exists an edge that is under-threshold and find its position
           isUnd = checkFreq(weights, threshold)
           isUnder = isUnd._1
           pos = isUnd._2
           // If it exists evaluate position of edge to delete from DFG and record vertices to delete
           if (isUnd._1) {
-            edgeDel = i - pos - 1
+            edgeDel = g - pos - 1
             srcDel += src(edgeDel)
+
+
+	println("EDGE DEL: "+srcDel)
             dstDel += dst(edgeDel)
+
+
+	println("EDGE DEL: "+dstDel)
             pos = 0
           }
           /* If no edge under-threshold is found then clear lists of edge weights that start from the same vertex
           * and add weight of current edge that have source vertex different than the previous one
 	        */
           weights.clear()
-          weights += triplet.attr
+          weights += e.attr
+	while(src.length > 1) {
+	
+		src.remove(0)
+		dst.remove(0)
+	}
+	println("SRC REM: "+src)
+	j = 0
+	g = 0
         }
       }
 
       // If it is the final edge than evaluate frequencies of any edges with same vertex
-      if (i == edgeCount - 1) {
+      if (k == edgeCount - 1) {
         isUnd = checkFreq(weights, threshold)
         // If edge under-threshold is found than evaluate position of edge to delete
         if (isUnd._1) {
-          edgeDel = i - pos - 1
+          edgeDel = g - pos - 1
           srcDel += src(edgeDel)
           dstDel += dst(edgeDel)
         }
       }
+	if(!srcDel.isEmpty) {
+	println("FFFFFFFFFFF: "+srcDel.toList)
+		toDeleteSrc += srcDel.toList
+		toDeleteDst += dstDel.toList
+	println("TO DELETE: "+toDeleteSrc)
+		srcDel.clear()
+		dstDel.clear()
+	}
+var sG = src(j)
+var dG = dst(j)
+	g2 = g2.subgraph(epred = e => ((e.srcId != sG) || (e.dstId != dG)))
 
-      i = i + 1
+	println("GGGGG")
+	g2.edges.foreach(println)
+      //i = i + 1
+}
 
-      (srcDel.toList, dstDel.toList)
+      //(srcDel.toList, dstDel.toList)
 
-    }).collect()
+    //}).collect()
 
     // Create lists of source edges and destination edges to delete
     var sourceDel = new ListBuffer[Long]()
     var destDel = new ListBuffer[Long]()
 
     // Example: toDelete = List( (List(),List()), List(List(1),List(4)), List(List(1,3),List(4,1)) )
-    if (toDelete.length > 1) {
-      var l = toDelete(toDelete.length - 1)
-      for (i <- l._1) {
+    if (toDeleteSrc.length >= 1) {
+	println("TO DELETE SRC: "+ toDeleteSrc)
+      //var l = toDeleteSrc(toDeleteSrc.length - 1)	// List[Long]
+	var lS = toDeleteSrc.flatten
+	println("LLLLLLLLLLLLLLLLLLLLLLLLLLL: "+lS)
+	var lD = toDeleteDst.flatten
+      for (i <- 0 until lS.length) {
         // Example: sourceDel = List(1,3)
-        sourceDel += i
+        sourceDel += lS(i)
+
+	println("SSSSSSSSSSSSSSSSSSSSSSSs: "+sourceDel)
       }
-      for (i <- l._2) {
+      for (i <- 0 until lD.length) {
         // Example: destDel = List(4,1)
-        destDel += i
+        destDel += lD(i)
+	println("DDDDDDDDDDDDDDDDDDDDDDD: "+destDel)
       }
     }
 
@@ -132,25 +184,26 @@ object FilterLog {
 
     // CODE: https://s15.postimg.cc/9no9nrs0r/filter_Log.jpg
 
-    var max: Int = -1
+    var max: Float = -1
     var weights2 = new ListBuffer[String]()
     var isUnd: Boolean = false
     var w1Length: Int = weights.length - 1
     var i = 0
     var pos: Int = -1
-
     // Evaluate foreach weight if it is less than: threshold * max, where 'max' is the maximum weight of other edges with same starting vertex
     for (weight <- weights) {
       w1Length = w1Length - 1
-      weights2 = weights.drop(weight.toInt)
+      weights2 = weights
+      weights2.drop(weight.toInt)
       for (w_weight <- weights2) {
-        if (w_weight.toInt > max) {
-          max = w_weight.toInt
+        if (w_weight.toFloat > max) {
+          max = w_weight.toFloat
+	println("MAX: "+max)
         }
       }
 
       // If weight is under-threshold than record position in which it is present in list of weights that is being analyzed
-      if (weight.toInt < threshold * max) {
+      if (weight.toFloat < threshold * max) {
         isUnd = true
         if (i == 0) { pos = weights.length - 1 }
         else pos = w1Length
