@@ -29,25 +29,20 @@ object FilterLog {
     var dstDel = new ListBuffer[Long]()
     var toDeleteSrc = new ListBuffer[(List[Long])]()
     var toDeleteDst = new ListBuffer[(List[Long])]()
+    var e : Edge[String] = null
+    var g2 = graph
+    var j : Int = -1
+    var g : Int = -1
 
-	var e : Edge[String] = null
-	var g2 = graph
-	var j : Int = -1
-	var g : Int = -1
     /** Create array of source vertices and destination vertices to delete **/
-    //var toDelete: Array[(List[Long], List[Long])] = graph.triplets.map(triplet => {
-for(k <- 0 until edgeCount.toInt) {
-	g = g + 1
-	println("GGGGGGGGGGG: "+g)
-		j = j + 1
-	println("JJJJJJJJJJJJJJ: "+j)
+    for(k <- 0 until edgeCount.toInt) {
+      g = g + 1
+      j = j + 1
       // Add to 'src' and 'dst' source IDs and destination IDs of all edges
       e = g2.edges.first()
       src += e.srcId
-println("SRC: "+src)
       dst += e.dstId
 
-println("DST: "+dst)
       // Foreach edge add its weight
       weights += e.attr
 
@@ -57,7 +52,6 @@ println("DST: "+dst)
          * evaluate frequencies of all edges that have the same source vertex
          */
         if (src(g) != src(g - 1)) {
-println("TTT")
           // Delete weight of current edge that has different vertex source
           weights -= e.attr
           // Check if exists an edge that is under-threshold and find its position
@@ -68,28 +62,22 @@ println("TTT")
           if (isUnd._1) {
             edgeDel = g - pos - 1
             srcDel += src(edgeDel)
-
-
-	println("EDGE DEL: "+srcDel)
             dstDel += dst(edgeDel)
-
-
-	println("EDGE DEL: "+dstDel)
             pos = 0
           }
           /* If no edge under-threshold is found then clear lists of edge weights that start from the same vertex
           * and add weight of current edge that have source vertex different than the previous one
-	        */
+	  */
           weights.clear()
           weights += e.attr
-	while(src.length > 1) {
-	
-		src.remove(0)
-		dst.remove(0)
-	}
-	println("SRC REM: "+src)
-	j = 0
-	g = 0
+
+            while(src.length > 1) {
+	      src.remove(0)
+	      dst.remove(0)
+	    }
+
+   	  j = 0
+	  g = 0
         }
       }
 
@@ -103,60 +91,47 @@ println("TTT")
           dstDel += dst(edgeDel)
         }
       }
-	if(!srcDel.isEmpty) {
-	println("FFFFFFFFFFF: "+srcDel.toList)
-		toDeleteSrc += srcDel.toList
-		toDeleteDst += dstDel.toList
-	println("TO DELETE: "+toDeleteSrc)
-		srcDel.clear()
-		dstDel.clear()
-	}
-var sG = src(j)
-var dG = dst(j)
-	g2 = g2.subgraph(epred = e => ((e.srcId != sG) || (e.dstId != dG)))
 
-	println("GGGGG")
-	g2.edges.foreach(println)
-      //i = i + 1
-}
-
-      //(srcDel.toList, dstDel.toList)
-
-    //}).collect()
-
-    // Create lists of source edges and destination edges to delete
-    var sourceDel = new ListBuffer[Long]()
-    var destDel = new ListBuffer[Long]()
-
-    // Example: toDelete = List( (List(),List()), List(List(1),List(4)), List(List(1,3),List(4,1)) )
-    if (toDeleteSrc.length >= 1) {
-	println("TO DELETE SRC: "+ toDeleteSrc)
-      //var l = toDeleteSrc(toDeleteSrc.length - 1)	// List[Long]
-	var lS = toDeleteSrc.flatten
-	println("LLLLLLLLLLLLLLLLLLLLLLLLLLL: "+lS)
-	var lD = toDeleteDst.flatten
-      for (i <- 0 until lS.length) {
-        // Example: sourceDel = List(1,3)
-        sourceDel += lS(i)
-
-	println("SSSSSSSSSSSSSSSSSSSSSSSs: "+sourceDel)
+      if(!srcDel.isEmpty) {
+	toDeleteSrc += srcDel.toList
+	toDeleteDst += dstDel.toList
+		
+	srcDel.clear()
+	dstDel.clear()
       }
-      for (i <- 0 until lD.length) {
-        // Example: destDel = List(4,1)
-        destDel += lD(i)
-	println("DDDDDDDDDDDDDDDDDDDDDDD: "+destDel)
-      }
-    }
 
-    var graph2: Graph[String, String] = graph
-
-    // Filtering DFG foreach element in 'sourceDel' and 'destDel'
-    for (j <- 0 until sourceDel.length) {
-      graph2 = filtering(graph2, sourceDel(j), destDel(j))
-    }
-
-    graph2
+      var sG = src(j)
+      var dG = dst(j)
+      g2 = g2.subgraph(epred = e => ((e.srcId != sG) || (e.dstId != dG)))
   }
+
+  // Create lists of source edges and destination edges to delete
+  var sourceDel = new ListBuffer[Long]()
+  var destDel = new ListBuffer[Long]()
+
+  // Example: toDelete = List( (List(),List()), List(List(1),List(4)), List(List(1,3),List(4,1)) )
+  if (toDeleteSrc.length >= 1) {
+    var lS = toDeleteSrc.flatten
+    var lD = toDeleteDst.flatten
+    for (i <- 0 until lS.length) {
+      // Example: sourceDel = List(1,3)
+      sourceDel += lS(i)
+    }
+    for (i <- 0 until lD.length) {
+      // Example: destDel = List(4,1)
+      destDel += lD(i)
+    }
+  }
+
+  var graph2: Graph[String, String] = graph
+
+  // Filtering DFG foreach element in 'sourceDel' and 'destDel'
+  for (j <- 0 until sourceDel.length) {
+    graph2 = filtering(graph2, sourceDel(j), destDel(j))
+  }
+
+  graph2
+}
 
   /** Create sub-DFG without edges under-threshold and without vertices with no incoming and outcoming edges **/
   def filtering(graph: Graph[String, String], sdel: Long, ddel: Long): Graph[String, String] = {
@@ -198,7 +173,6 @@ var dG = dst(j)
       for (w_weight <- weights2) {
         if (w_weight.toFloat > max) {
           max = w_weight.toFloat
-	println("MAX: "+max)
         }
       }
 
